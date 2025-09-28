@@ -24,6 +24,14 @@ bool InitWindow() {
 		}
 	}
 
+	//// Use SDL to query what is the fullscreen max
+	//{
+	//	SDL_DisplayMode displayMode;
+	//	SDL_GetCurrentDisplayMode(0, &displayMode);
+	//	windowWidth = displayMode.w;
+	//	windowHeight = displayMode.h;
+	//}
+
 	// Creating sdl window
 	{
 		std::cout << "Creating SDL window..." << std::endl;
@@ -45,6 +53,7 @@ bool InitWindow() {
 			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	}
 
+	//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
 	return true;
 }
@@ -52,7 +61,8 @@ bool InitWindow() {
 void Setup() {
 	colorBuffer = std::make_unique<uint32_t[]>(windowWidth * windowHeight);
 
-	colorBufferTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, windowWidth, windowHeight);
+	colorBufferTexture = SDL_CreateTexture(
+		renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, windowWidth, windowHeight);
 }
 
 void DestroyWindow() {
@@ -77,8 +87,9 @@ void ProcessInput() {
 }
 
 void RenderColorBuffer() {
-	SDL_UpdateTexture(colorBufferTexture, NULL, colorBuffer.get(), windowWidth * sizeof(uint32_t));
-	SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL);
+	SDL_UpdateTexture(
+		colorBufferTexture, NULL, colorBuffer.get(), windowWidth * sizeof(uint32_t)); // Source, if we need to take only cut of it, source of data, pitch just how many pixels we have in a row
+	SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL); // last 2 args if we want just part of data
 }
 void Update() {
 
@@ -92,12 +103,34 @@ void ClearColorBuffer(uint32_t color) {
 	}
 }
 
+void DrawGrid() {
+	uint32_t color = 0xFFFFFFFF;
+	for (int y = 0; y < windowHeight; ++y) {
+		for (int x = 0; x < windowWidth; ++x) {
+			if (y % 10 == 0 || x % 10 == 0)
+				colorBuffer[windowWidth * y + x] = color;
+		}
+	}
+}
+
+void DrawRectangle(int x, int y, int w, int h, uint32_t color) {
+	int64_t startPos = windowWidth * y + x;
+	for (int i = 0; i < h; ++i) {
+		int64_t rowStart = startPos + windowWidth * i;
+		for (int j = 0; j < w; ++j) {
+			colorBuffer[rowStart + j] = color;
+		}
+	}
+}
+
 void Render() {
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
-	RenderColorBuffer();
 	ClearColorBuffer(0xFF00FF00);
+	DrawGrid();
+	DrawRectangle(100, 50, 100, 100, 0xFFFF00FF);
+	RenderColorBuffer();
 
 	SDL_RenderPresent(renderer);
 }
