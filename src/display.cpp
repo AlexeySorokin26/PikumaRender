@@ -47,11 +47,11 @@ bool InitWindow() {
 }
 
 void DrawRectangle(int x, int y, int w, int h, uint32_t color) {
-	int64_t startPos = windowWidth * y + x;
-	for (int i = 0; i < h; ++i) {
-		int64_t rowStart = startPos + windowWidth * i;
-		for (int j = 0; j < w; ++j) {
-			colorBuffer[rowStart + j] = color;
+	for (int i = 0; i < w; ++i) {
+		for (int j = 0; j < h; ++j) {
+			int currentX = x + i;
+			int currentY = y + j;
+			DrawPixel(currentX, currentY, color);
 		}
 	}
 }
@@ -87,6 +87,6 @@ void DestroyWindow() {
 }
 
 void DrawPixel(int x, int y, uint32_t color) {
-	if(x < windowWidth && y < windowHeight)
+	if (x >= 0 && x < windowWidth && y >= 0 && y < windowHeight)
 		colorBuffer[y * windowWidth + x] = color;
 }

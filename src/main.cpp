@@ -8,6 +8,7 @@
 
 const int nPoints = 9 * 9 * 9;
 std::vector<Vector3> cubePoints{ nPoints };
+std::vector<Vector2> projectedCubePoints{ nPoints };
 
 bool isRunning = true;
 SDL_Window* window;
@@ -16,6 +17,12 @@ std::unique_ptr<uint32_t[]> colorBuffer = nullptr;
 SDL_Texture* colorBufferTexture;
 int windowWidth = 800;
 int windowHeight = 600;
+int fovFactor = 100;
+
+Vector2 Project(Vector3 point) {
+	Vector2 projectedPoint{ fovFactor * point.x, fovFactor * point.y };
+	return projectedPoint;
+}
 
 void ProcessInput() {
 	SDL_Event event;
@@ -37,31 +44,33 @@ void Setup() {
 
 	colorBufferTexture = SDL_CreateTexture(
 		renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, windowWidth, windowHeight);
-
+	int pointCounter = 0;
 	for (float x = -1; x <= 1; x += 0.25) {
 		for (float y = -1; y <= 1; y += 0.25) {
 			for (float z = -1; z <= 1; z += 0.25) {
 				Vector3 newPoint = { x,y,z };
-				cubePoints.push_back(newPoint);
+				cubePoints[pointCounter++] = newPoint;
 			}
 		}
 	}
 }
 
-
 void Update() {
-
+	for (int i = 0; i < nPoints; ++i) {
+		Vector3 point = cubePoints[i];
+		Vector2 projectedPoint = Project(point);
+		projectedCubePoints[i] = projectedPoint;
+	}
 }
 
-
 void Render() {
-	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-	SDL_RenderClear(renderer);
-
 	ClearColorBuffer(0xFF00FF00);
-	DrawGrid();
-	DrawRectangle(100, 50, 100, 100, 0xFFFF00FF);
-	DrawPixel(20, 20, 0xFFFF00FF);
+
+	for (int i = 0; i < nPoints; ++i) {
+		Vector2 projectePoint = projectedCubePoints[i];
+		DrawRectangle(projectePoint.x + windowWidth / 2, projectePoint.y + windowHeight / 2, 4, 4, 0xFF0000FF);
+	}
+
 	RenderColorBuffer();
 
 	SDL_RenderPresent(renderer);
