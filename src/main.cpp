@@ -16,6 +16,7 @@ SDL_Renderer* renderer;
 std::unique_ptr<uint32_t[]> colorBuffer = nullptr;
 SDL_Texture* colorBufferTexture;
 Vector3 camPos = { 0,0,-5 };
+Vector3 cubeRotation = {0, 0, 0};
 int windowWidth = 800;
 int windowHeight = 600;
 int fovFactor = 640;
@@ -57,13 +58,15 @@ void Setup() {
 }
 
 void Update() {
+    cubeRotation.y += 0.01;
 	for (int i = 0; i < nPoints; ++i) {
 		Vector3 point = cubePoints[i];
-
+        
+        Vector3 transformedPoint = Vec3RotateY(point, cubeRotation.y);
 		// move the point away from the camera
-		point.z -= camPos.z;
+        transformedPoint.z -= camPos.z;
 
-		Vector2 projectedPoint = Project(point);
+		Vector2 projectedPoint = Project(transformedPoint);
 		projectedCubePoints[i] = projectedPoint;
 	}
 }
