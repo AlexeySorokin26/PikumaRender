@@ -6,6 +6,9 @@
 #include <iostream>
 #include <vector>
 
+const int FPS = 30; // we want to render 30 frames in 1 second (it's just a defintion)
+const float frameTargetTime = (1000.0 / FPS); // how many time each frame should take if we want to render all in 1s
+
 const int nPoints = 9 * 9 * 9;
 std::vector<Vector3> cubePoints{ nPoints };
 std::vector<Vector2> projectedCubePoints{ nPoints };
@@ -17,6 +20,7 @@ std::unique_ptr<uint32_t[]> colorBuffer = nullptr;
 SDL_Texture* colorBufferTexture;
 Vector3 camPos = { 0,0,-5 };
 Vector3 cubeRotation = {0, 0, 0};
+int prevFrameTime = 0;
 int windowWidth = 800;
 int windowHeight = 600;
 int fovFactor = 640;
@@ -58,6 +62,13 @@ void Setup() {
 }
 
 void Update() {
+    // Frame rate limiting
+    int timeToWait = frameTargetTime - (SDL_GetTicks() - prevFrameTime);
+    if (timeToWait > 0 && timeToWait <= frameTargetTime) {
+        SDL_Delay(timeToWait);
+    }
+    prevFrameTime = SDL_GetTicks();
+    
     cubeRotation.y += 0.01;
 	for (int i = 0; i < nPoints; ++i) {
 		Vector3 point = cubePoints[i];
