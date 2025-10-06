@@ -1,14 +1,11 @@
 
 #include "display.h"
 #include "vector.h"
+#include "mesh.h"
 
 #include <SDL.h>
 #include <iostream>
 #include <vector>
-
-const int nPoints = 9 * 9 * 9;
-std::vector<Vector3> cubePoints{ nPoints };
-std::vector<Vector2> projectedCubePoints{ nPoints };
 
 Display display;
 bool isRunning = true;
@@ -16,6 +13,8 @@ Vector3 camPos = { 0,0,-5 };
 Vector3 cubeRotation = { 0, 0, 0 };
 int prevFrameTime = 0;
 int fovFactor = 640;
+
+Triangle trianglesToRender[N_MESH_FACES];
 
 Vector2 Project(Vector3 point) {
 	Vector2 projectedPoint{ fovFactor * point.x / point.z, fovFactor * point.y / point.z };
@@ -42,15 +41,6 @@ void Setup() {
 
 	display.colorBufferTexture = SDL_CreateTexture(
 		display.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, display.windowWidth, display.windowHeight);
-	int pointCounter = 0;
-	for (float x = -1; x <= 1; x += 0.25) {
-		for (float y = -1; y <= 1; y += 0.25) {
-			for (float z = -1; z <= 1; z += 0.25) {
-				Vector3 newPoint = { x,y,z };
-				cubePoints[pointCounter++] = newPoint;
-			}
-		}
-	}
 }
 
 void Update() {
@@ -62,24 +52,38 @@ void Update() {
 	prevFrameTime = SDL_GetTicks();
 
 	cubeRotation.y += 0.01;
-	for (int i = 0; i < nPoints; ++i) {
-		Vector3 point = cubePoints[i];
 
-		Vector3 transformedPoint = Vec3RotateY(point, cubeRotation.y);
-		// move the point away from the camera
-		transformedPoint.z -= camPos.z;
-
-		Vector2 projectedPoint = Project(transformedPoint);
-		projectedCubePoints[i] = projectedPoint;
+	for (int i = 0; i < N_MESH_FACES; ++i) {
+		Face meshFace = meshFaces[i]; // indices of our vertices 
+		Vector3 faceVertices[3];	  // Set of vertices
+		faceVertices[0] = meshVertices[meshFace.a - 1];
+		faceVertices[1] = meshVertices[meshFace.b - 1];
+		faceVertices[2] = meshVertices[meshFace.c - 1];
+		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
+		for (int j = 0; j < 3; ++j) {
+			// Apply rotation for fun
+			Vector3 transformedPoint = Vec3RotateY(faceVertices[j], cubeRotation.y);
+			// Translate the vertex away from the camera in z
+			transformedPoint.z -= camPos.z;
+			// Project using perspective projection
+			Vector2 projectedPoint = Project(transformedPoint);
+			// Scale and translate the projected points to the middle of the screen
+			projectedPoint.x += display.windowWidth / 2;
+			projectedPoint.y += display.windowHeight / 2;
+			projectedTriangle.points[j] = projectedPoint;
+		}
+		trianglesToRender[i] = projectedTriangle;
 	}
 }
 
 void Render() {
 	display.ClearColorBuffer(0xFF00FF00);
 
-	for (int i = 0; i < nPoints; ++i) {
-		Vector2 projectePoint = projectedCubePoints[i];
-		display.DrawRectangle(projectePoint.x + display.windowWidth / 2, projectePoint.y + display.windowHeight / 2, 4, 4, 0xFF0000FF);
+	for (int i = 0; i < N_MESH_FACES; ++i) {
+		Triangle triangle = trianglesToRender[i];
+		display.DrawRectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, 0XFFFFFF00);
+		display.DrawRectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, 0XFFFFFF00);
+		display.DrawRectangle(triangle.points[2].x, triangle.points[2].y, 3, 3, 0XFFFFFF00);
 	}
 
 	display.RenderColorBuffer();
@@ -92,8 +96,6 @@ int main(int argc, char* argv[]) {
 	isRunning = display.InitWindow();
 
 	Setup();
-
-	Vector3 pos{ 1,1,1 };
 
 	SDL_Event event;
 
