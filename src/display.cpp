@@ -1,7 +1,6 @@
 #include "display.h"
 
-
-bool InitWindow() {
+bool Display::InitWindow() {
 	// Init sdl
 	{
 		std::cout << "Initializing SDL..." << std::endl;
@@ -46,7 +45,7 @@ bool InitWindow() {
 	return true;
 }
 
-void DrawRectangle(int x, int y, int w, int h, uint32_t color) {
+void Display::DrawRectangle(int x, int y, int w, int h, uint32_t color) {
 	for (int i = 0; i < w; ++i) {
 		for (int j = 0; j < h; ++j) {
 			int currentX = x + i;
@@ -56,7 +55,7 @@ void DrawRectangle(int x, int y, int w, int h, uint32_t color) {
 	}
 }
 
-void DrawGrid() {
+void Display::DrawGrid() {
 	uint32_t color = 0xFFFFFFFF;
 	for (int y = 0; y < windowHeight; ++y) {
 		for (int x = 0; x < windowWidth; ++x) {
@@ -66,13 +65,13 @@ void DrawGrid() {
 	}
 }
 
-void RenderColorBuffer() {
+void Display::RenderColorBuffer() {
 	SDL_UpdateTexture(
 		colorBufferTexture, NULL, colorBuffer.get(), windowWidth * sizeof(uint32_t)); // Source, if we need to take only cut of it, source of data, pitch just how many pixels we have in a row
 	SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL); // last 2 args if we want just part of data
 }
 
-void ClearColorBuffer(uint32_t color) {
+void Display::ClearColorBuffer(uint32_t color) {
 	for (int y = 0; y < windowHeight; ++y) {
 		for (int x = 0; x < windowWidth; ++x) {
 			colorBuffer[windowWidth * y + x] = color;
@@ -80,13 +79,13 @@ void ClearColorBuffer(uint32_t color) {
 	}
 }
 
-void DestroyWindow() {
+void Display::DestroyWindow() {
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
-void DrawPixel(int x, int y, uint32_t color) {
+void Display::DrawPixel(int x, int y, uint32_t color) {
 	if (x >= 0 && x < windowWidth && y >= 0 && y < windowHeight)
 		colorBuffer[y * windowWidth + x] = color;
 }
