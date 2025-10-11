@@ -10,11 +10,11 @@
 Display display;
 bool isRunning = true;
 Vector3 camPos = { 0,0,-5 };
-Vector3 cubeRotation = { 0, 0, 0 };
 int prevFrameTime = 0;
 int fovFactor = 640;
+Mesh mesh;
 
-Triangle trianglesToRender[N_MESH_FACES];
+std::vector<Triangle> trianglesToRender;
 
 Vector2 Project(Vector3 point) {
 	Vector2 projectedPoint{ fovFactor * point.x / point.z, fovFactor * point.y / point.z };
@@ -37,6 +37,9 @@ void ProcessInput() {
 }
 
 void Setup() {
+	mesh.Load();
+	trianglesToRender.resize(N_MESH_FACES);
+
 	display.colorBuffer = std::make_unique<uint32_t[]>(display.windowWidth * display.windowHeight);
 
 	display.colorBufferTexture = SDL_CreateTexture(
@@ -52,18 +55,18 @@ void Update() {
 	}
 	prevFrameTime = SDL_GetTicks();
 
-	cubeRotation.y += 0.01;
+	mesh.rotation.y += 0.01;
 
-	for (int i = 0; i < N_MESH_FACES; ++i) {
-		Face meshFace = meshFaces[i]; // indices of our vertices 
+	for (int i = 0; i < mesh.faces.size(); ++i) {
+		Face meshFace = mesh.faces[i]; // indices of our vertices 
 		Vector3 faceVertices[3];	  // Set of vertices
-		faceVertices[0] = meshVertices[meshFace.a - 1];
-		faceVertices[1] = meshVertices[meshFace.b - 1];
-		faceVertices[2] = meshVertices[meshFace.c - 1];
+		faceVertices[0] = mesh.vertices[meshFace.a - 1];
+		faceVertices[1] = mesh.vertices[meshFace.b - 1];
+		faceVertices[2] = mesh.vertices[meshFace.c - 1];
 		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
 		for (int j = 0; j < 3; ++j) {
 			// Apply rotation for fun
-			Vector3 transformedPoint = Vec3RotateY(faceVertices[j], cubeRotation.y);
+			Vector3 transformedPoint = Vec3RotateY(faceVertices[j], mesh.rotation.y);
 			// Translate the vertex away from the camera in z
 			transformedPoint.z -= camPos.z;
 			// Project using perspective projection
@@ -80,7 +83,7 @@ void Update() {
 void Render() {
 	display.ClearColorBuffer(0xFFFFFFFF);
 
-	for (int i = 0; i < N_MESH_FACES; ++i) {
+	for (int i = 0; i < trianglesToRender.size(); ++i) {
 		Triangle triangle = trianglesToRender[i];
 		display.DrawTriangle(
 			triangle.points[0].x, triangle.points[0].y,
