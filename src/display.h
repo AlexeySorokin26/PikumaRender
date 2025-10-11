@@ -24,6 +24,8 @@ public:
 	void ClearColorBuffer(uint32_t color);
 	void DestroyWindow();
 	void DrawPixel(int x, int y, uint32_t color);
+	void DrawLine(int x0, int y0, int x1, int y1, uint32_t color);
+	void DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 };
 
 

@@ -89,3 +89,28 @@ void Display::DrawPixel(int x, int y, uint32_t color) {
 	if (x >= 0 && x < windowWidth && y >= 0 && y < windowHeight)
 		colorBuffer[y * windowWidth + x] = color;
 }
+
+void Display::DrawLine(int x0, int y0, int x1, int y1, uint32_t color) {
+	int deltaX = x1 - x0;
+	int deltaY = y1 - y0;
+
+	// Depending on if deltaX is > deltaY or opposite 
+	// We choose that we increment in y direction or in x direction by 1 and then we calculate the second thing
+	int longestSideLength = (std::abs(deltaX) >= std::abs(deltaY)) ? std::abs(deltaX) : std::abs(deltaY);
+	float xInc = deltaX / static_cast<float>(longestSideLength);
+	float yInc = deltaY / static_cast<float>(longestSideLength);
+
+	float currentX = x0;
+	float currentY = y0;
+	for (int i = 0; i < longestSideLength; ++i) {
+		DrawPixel(std::round(currentX), std::round(currentY), color);
+		currentX += xInc;
+		currentY += yInc;
+	}
+}
+
+void Display::DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+	DrawLine(x0, y0, x1, y1, color);
+	DrawLine(x1, y1, x2, y2, color);
+	DrawLine(x2, y2, x0, y0, color);
+}

@@ -40,7 +40,8 @@ void Setup() {
 	display.colorBuffer = std::make_unique<uint32_t[]>(display.windowWidth * display.windowHeight);
 
 	display.colorBufferTexture = SDL_CreateTexture(
-		display.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, display.windowWidth, display.windowHeight);
+		display.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+		display.windowWidth, display.windowHeight);
 }
 
 void Update() {
@@ -77,13 +78,15 @@ void Update() {
 }
 
 void Render() {
-	display.ClearColorBuffer(0xFF00FF00);
+	display.ClearColorBuffer(0xFFFFFFFF);
 
 	for (int i = 0; i < N_MESH_FACES; ++i) {
 		Triangle triangle = trianglesToRender[i];
-		display.DrawRectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, 0XFFFFFF00);
-		display.DrawRectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, 0XFFFFFF00);
-		display.DrawRectangle(triangle.points[2].x, triangle.points[2].y, 3, 3, 0XFFFFFF00);
+		display.DrawTriangle(
+			triangle.points[0].x, triangle.points[0].y,
+			triangle.points[1].x, triangle.points[1].y,
+			triangle.points[2].x, triangle.points[2].y,
+			0xFF00FF00);
 	}
 
 	display.RenderColorBuffer();
