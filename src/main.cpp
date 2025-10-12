@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <iostream>
 #include <vector>
+#include <string>
 
 Display display;
 bool isRunning = true;
@@ -13,6 +14,7 @@ Vector3 camPos = { 0,0,-5 };
 int prevFrameTime = 0;
 int fovFactor = 640;
 Mesh mesh;
+std::string objPath;
 
 std::vector<Triangle> trianglesToRender;
 
@@ -37,8 +39,10 @@ void ProcessInput() {
 }
 
 void Setup() {
-	mesh.Load();
-	trianglesToRender.resize(N_MESH_FACES);
+	//mesh.LoadCube();
+	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\f22.obj"; // todo cool to have some resources path 
+	mesh.LoadObjFile(objPath);
+	trianglesToRender.resize(mesh.faces.size()); // Allocate and call constructor
 
 	display.colorBuffer = std::make_unique<uint32_t[]>(display.windowWidth * display.windowHeight);
 

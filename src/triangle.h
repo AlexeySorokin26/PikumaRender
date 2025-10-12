@@ -11,6 +11,11 @@ struct Face {
 
 /// @brief Sores the actual vec2 points of the triangle in the screen
 struct Triangle {
+	Triangle() {
+		points[0] = Vector2{ 0., 0. };
+		points[1] = Vector2{ 0., 0. };
+		points[2] = Vector2{ 0., 0. };
+	}
 	Vector2 points[3];
 };
 

@@ -4,55 +4,44 @@
 #include "triangle.h"
 
 #include <vector>
-
-#define N_MESH_VERTICES 8
-#define N_MESH_FACES (6 * 2) // 6 cube faces, 2 triangles per face
+#include <string>
+#include <fstream>
+#include <sstream>
 
 struct Mesh {
 	std::vector<Vector3> vertices;
 	std::vector<Face> faces;
-	Vector3 rotation;  // angles in x,y,z (eurler angles)
+	Vector3 rotation;  // angles in x,y,z (Euler angles)
 
-	Vector3 meshVertices[N_MESH_VERTICES] = {
-		{-1, -1, -1 }, // 1
-		{-1, 1,-1 }, // 2
-		{1, 1, -1 }, // 3
-		{1, -1, -1 }, // 4
-		{1, 1, 1 }, // 5
-		{1, -1, 1 }, // 6
-		{-1, 1, 1 }, // 7
-		{-1, -1, 1 }  // 8
-	};
-
-
-	Face meshFaces[N_MESH_FACES] = {
-		// front
-		{1, 2, 3 },
-		{1, 3, 4 },
-		// right
-		{4, 3, 5 },
-		{4, 5, 6 },
-		// back
-		{6, 5, 7 },
-		{6, 7, 8 },
-		// left
-		{8, 7, 2 },
-		{8, 2, 1 },
-		// top
-		{2, 7, 5 },
-		{2, 5, 3 },
-		// bottom
-		{6, 8, 1 },
-		{6, 1, 4 }
-	};
-	void Load() {
-		for (int i = 0; i < N_MESH_VERTICES; ++i) {
-			vertices.push_back(meshVertices[i]);
-		}
-		for (int i = 0; i < N_MESH_FACES; ++i) {
-			faces.push_back(meshFaces[i]);
+	void LoadObjFile(const std::string& path) {
+		std::ifstream file(path);
+		if (!file.is_open())
+			throw std::runtime_error("File does not exist: " + path);
+		std::string str;
+		while (std::getline(file, str)) {
+			if (str[0] == 'v' && str[1] == ' ') {
+				std::string tmpStr = str.substr(1);
+				std::istringstream iss(tmpStr);
+				float x, y, z;
+				iss >> x >> y >> z;
+				Vector3 tmp{ x, y, z };
+				vertices.push_back(tmp);
+			}
+			else if (str[0] == 'f') {
+				std::string tmpStr = str.substr(1);
+				std::istringstream iss(tmpStr);
+				Face face;
+				int first, second, third;
+				char slash;
+				iss >> first >> slash >> second >> slash >> third;
+				face.a = first;
+				iss >> first >> slash >> second >> slash >> third;
+				face.b = first;
+				iss >> first >> slash >> second >> slash >> third;
+				face.c = first;
+				faces.push_back(face);
+			}
 		}
 	}
-
 };
 
