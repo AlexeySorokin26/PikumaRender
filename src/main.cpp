@@ -10,7 +10,7 @@
 
 Display display;
 bool isRunning = true;
-Vector3 camPos = { 0,0,-5 };
+Vector3 camPos = { 0,0,0 };
 int prevFrameTime = 0;
 int fovFactor = 640;
 Mesh mesh;
@@ -52,6 +52,7 @@ void Setup() {
 }
 
 void Update() {
+	trianglesToRender.clear();
 	// Frame rate limiting
 	int timeToWait = display.frameTargetTime - (SDL_GetTicks() - prevFrameTime);
 	if (timeToWait > 0 && timeToWait <= display.frameTargetTime) {
@@ -59,7 +60,9 @@ void Update() {
 	}
 	prevFrameTime = SDL_GetTicks();
 
+	mesh.rotation.x += 0.01;
 	mesh.rotation.y += 0.01;
+	mesh.rotation.z += 0.01;
 
 	for (int i = 0; i < mesh.faces.size(); ++i) {
 		Face meshFace = mesh.faces[i]; // indices of our vertices 
@@ -67,20 +70,49 @@ void Update() {
 		faceVertices[0] = mesh.vertices[meshFace.a - 1];
 		faceVertices[1] = mesh.vertices[meshFace.b - 1];
 		faceVertices[2] = mesh.vertices[meshFace.c - 1];
-		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
+
+		// Apply transformations
+		std::vector<Vector3> transformedVertices;
 		for (int j = 0; j < 3; ++j) {
 			// Apply rotation for fun
-			Vector3 transformedPoint = Vec3RotateY(faceVertices[j], mesh.rotation.y);
+			Vector3 transformedPoint = Vec3RotateX(faceVertices[j], mesh.rotation.x);
+			transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
+			transformedPoint = Vec3RotateZ(transformedPoint, mesh.rotation.z);
 			// Translate the vertex away from the camera in z
-			transformedPoint.z -= camPos.z;
-			// Project using perspective projection
-			Vector2 projectedPoint = Project(transformedPoint);
+			transformedPoint.z += 5;
+			transformedVertices.push_back(transformedPoint);
+		}
+
+		// Perform back culling
+		Vector3 a = transformedVertices[0];
+		Vector3 b = transformedVertices[1];
+		Vector3 c = transformedVertices[2];
+		// 1. Find vectors B-A and C-A
+		Vector3 ab = Subtract(b, a);
+		Vector3 ac = Subtract(c, a);
+		// 2. Take cross prod and find N
+		Vector3 n = Cross(ab, ac);
+		Normalize(n);
+		// 3. Find the camera ray by subtracting cam pos and point A
+		Vector3 camRay = Subtract(camPos, a);
+		// 4. Dot product between N and cam ray
+		float dot = Dot(n, camRay);
+		// 5. If dot < 0 skip the face
+		if (dot < 0)
+			continue;
+
+		// Project using perspective projection
+		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
+		for (int j = 0; j < 3; ++j) {
+			Vector2 projectedPoint = Project(transformedVertices[j]);
 			// Scale and translate the projected points to the middle of the screen
 			projectedPoint.x += display.windowWidth / 2;
 			projectedPoint.y += display.windowHeight / 2;
 			projectedTriangle.points[j] = projectedPoint;
 		}
-		trianglesToRender[i] = projectedTriangle;
+
+		// Store result
+		trianglesToRender.push_back(projectedTriangle);
 	}
 }
 
