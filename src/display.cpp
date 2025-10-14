@@ -114,3 +114,60 @@ void Display::DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint3
 	DrawLine(x1, y1, x2, y2, color);
 	DrawLine(x2, y2, x0, y0, color);
 }
+
+void Display::DrawFilledTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+	// Sort the vertices by y-coordinate y0<y1<y2
+	if (y0 > y1) {
+		std::swap(y0, y1);
+		std::swap(x0, x1);
+	}
+	if (y0 > y2) {
+		std::swap(y0, y2);
+		std::swap(x0, x2);
+	}
+	if (y1 > y2) {
+		std::swap(y1, y2);
+		std::swap(x1, x2);
+	}
+	// Calculate (Mx, My) using triangle similarity
+	int My = y1;
+	int Mx = (x2 - x0) * (y1 - y0) / (float)(y2 - y0) + x0;
+	// Draw flat-bottom triangle
+	FillFlatBottomTriangle(x0, y0, x1, y1, Mx, My, color);
+	// Draw flat-top triangle
+	FillFlatTopTriangle(x1, y1, Mx, My, x2, y2, color);
+}
+
+void Display::FillFlatTopTriangle(int x1, int y1, int Mx, int My, int x2, int y2, uint32_t color) {
+	if (y1 == y2)
+		return;
+	if (My == y2)
+		return;
+	// Find 2 slopes
+	float slope1 = (x2 - x1) / (y2 - y1); // We got slope for x and for y since we change y by 1 on every step
+	float slope2 = (x2 - Mx) / (y2 - My);
+	int xStart = x2;
+	int xEnd = x2;
+	for (int y = y2; y >= y1; --y) {
+		xStart -= slope1;
+		xEnd -= slope2;
+		DrawLine(xStart, y, xEnd, y, color);
+	}
+}
+
+void Display::FillFlatBottomTriangle(int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color) {
+	if (y1 == y0)
+		return;
+	if (My == y0)
+		return;
+	// Find 2 slopes
+	float slope1 = (x1 - x0) / (y1 - y0); // We got slope for x and for y since we change y by 1 on every step
+	float slope2 = (Mx - x0) / (My - y0);
+	int xStart = x0;
+	int xEnd = x0;
+	for (int y = y0; y < y1; ++y) {
+		xStart += slope1;
+		xEnd += slope2;
+		DrawLine(xStart, y, xEnd, y, color);
+	}
+}

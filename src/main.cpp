@@ -40,7 +40,7 @@ void ProcessInput() {
 
 void Setup() {
 	//mesh.LoadCube();
-	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\f22.obj"; // todo cool to have some resources path 
+	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj"; // todo cool to have some resources path 
 	mesh.LoadObjFile(objPath);
 	trianglesToRender.resize(mesh.faces.size()); // Allocate and call constructor
 
@@ -121,7 +121,7 @@ void Render() {
 
 	for (int i = 0; i < trianglesToRender.size(); ++i) {
 		Triangle triangle = trianglesToRender[i];
-		display.DrawTriangle(
+		display.DrawFilledTriangle(
 			triangle.points[0].x, triangle.points[0].y,
 			triangle.points[1].x, triangle.points[1].y,
 			triangle.points[2].x, triangle.points[2].y,
