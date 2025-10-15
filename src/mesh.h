@@ -13,7 +13,7 @@ struct Mesh {
 	std::vector<Face> faces;
 	Vector3 rotation;  // angles in x,y,z (Euler angles)
 
-	void LoadObjFile(const std::string& path) {
+    void LoadObjFile(const std::string& path) {
 		std::ifstream file(path);
 		if (!file.is_open())
 			throw std::runtime_error("File does not exist: " + path);

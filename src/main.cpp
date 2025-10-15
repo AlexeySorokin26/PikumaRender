@@ -31,16 +31,29 @@ void ProcessInput() {
 	case SDL_QUIT:
 		isRunning = false;
 		break;
-	case SDL_KEYDOWN:
-		if (event.key.keysym.sym == SDLK_ESCAPE)
-			isRunning = false;
-		break;
+    case SDL_KEYDOWN:
+        if (event.key.keysym.sym == SDLK_ESCAPE)
+            isRunning = false;
+        if (event.key.keysym.sym == SDLK_1)
+            display.renderMethod = RenderMethod::RENDER_WIRE_VERTEX;
+        if (event.key.keysym.sym == SDLK_2)
+            display.renderMethod = RenderMethod::RENDER_WIRE;
+        if (event.key.keysym.sym == SDLK_3)
+            display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE;
+        if (event.key.keysym.sym == SDLK_4)
+            display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
+        if (event.key.keysym.sym == SDLK_c)
+            display.cullMethod = CullMethod::CULL_BACKFACE;
+        if (event.key.keysym.sym == SDLK_d)
+            display.cullMethod = CullMethod::CULL_NONE;
+        break;
 	}
 }
 
 void Setup() {
 	//mesh.LoadCube();
-	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj"; // todo cool to have some resources path 
+    // objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj"; // todo cool to have some resources path
+    objPath = "/Users/maestro/Desktop/PikumaRender/assets/cube.obj"; // todo cool to have some resources path
 	mesh.LoadObjFile(objPath);
 	trianglesToRender.resize(mesh.faces.size()); // Allocate and call constructor
 
@@ -61,12 +74,12 @@ void Update() {
 	prevFrameTime = SDL_GetTicks();
 
 	mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.01;
-	mesh.rotation.z += 0.01;
+	//mesh.rotation.y += 0.01;
+	//mesh.rotation.z += 0.01;
 
 	for (int i = 0; i < mesh.faces.size(); ++i) {
 		Face meshFace = mesh.faces[i]; // indices of our vertices 
-		Vector3 faceVertices[3];	  // Set of vertices
+		Vector3 faceVertices[3];	   // Set of vertices
 		faceVertices[0] = mesh.vertices[meshFace.a - 1];
 		faceVertices[1] = mesh.vertices[meshFace.b - 1];
 		faceVertices[2] = mesh.vertices[meshFace.c - 1];
@@ -76,9 +89,10 @@ void Update() {
 		for (int j = 0; j < 3; ++j) {
 			// Apply rotation for fun
 			Vector3 transformedPoint = Vec3RotateX(faceVertices[j], mesh.rotation.x);
-			transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
-			transformedPoint = Vec3RotateZ(transformedPoint, mesh.rotation.z);
+			//transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
+			//transformedPoint = Vec3RotateZ(transformedPoint, mesh.rotation.z);
 			// Translate the vertex away from the camera in z
+            //Vector3 transformedPoint = faceVertices[j];
 			transformedPoint.z += 5;
 			transformedVertices.push_back(transformedPoint);
 		}
@@ -98,7 +112,7 @@ void Update() {
 		// 4. Dot product between N and cam ray
 		float dot = Dot(n, camRay);
 		// 5. If dot < 0 skip the face
-		if (dot < 0)
+        if (dot < 0)
 			continue;
 
 		// Project using perspective projection
