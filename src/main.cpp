@@ -31,29 +31,33 @@ void ProcessInput() {
 	case SDL_QUIT:
 		isRunning = false;
 		break;
-    case SDL_KEYDOWN:
-        if (event.key.keysym.sym == SDLK_ESCAPE)
-            isRunning = false;
-        if (event.key.keysym.sym == SDLK_1)
-            display.renderMethod = RenderMethod::RENDER_WIRE_VERTEX;
-        if (event.key.keysym.sym == SDLK_2)
-            display.renderMethod = RenderMethod::RENDER_WIRE;
-        if (event.key.keysym.sym == SDLK_3)
-            display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE;
-        if (event.key.keysym.sym == SDLK_4)
-            display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
-        if (event.key.keysym.sym == SDLK_c)
-            display.cullMethod = CullMethod::CULL_BACKFACE;
-        if (event.key.keysym.sym == SDLK_d)
-            display.cullMethod = CullMethod::CULL_NONE;
-        break;
+	case SDL_KEYDOWN:
+		if (event.key.keysym.sym == SDLK_ESCAPE)
+			isRunning = false;
+		if (event.key.keysym.sym == SDLK_1)
+			display.renderMethod = RenderMethod::RENDER_WIRE_VERTEX;
+		if (event.key.keysym.sym == SDLK_2)
+			display.renderMethod = RenderMethod::RENDER_WIRE;
+		if (event.key.keysym.sym == SDLK_3)
+			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE;
+		if (event.key.keysym.sym == SDLK_4)
+			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
+		if (event.key.keysym.sym == SDLK_c)
+			display.cullMethod = CullMethod::CULL_BACKFACE;
+		if (event.key.keysym.sym == SDLK_d)
+			display.cullMethod = CullMethod::CULL_NONE;
+		break;
 	}
 }
 
 void Setup() {
-	//mesh.LoadCube();
-    // objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj"; // todo cool to have some resources path
-    objPath = "/Users/maestro/Desktop/PikumaRender/assets/cube.obj"; // todo cool to have some resources path
+#ifdef _WIN32
+	// Windows
+	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj";
+#elif __APPLE__
+	// macOS
+	objPath = "/Users/maestro/Desktop/PikumaRender/assets/cube.obj";
+#endif
 	mesh.LoadObjFile(objPath);
 	trianglesToRender.resize(mesh.faces.size()); // Allocate and call constructor
 
@@ -92,7 +96,7 @@ void Update() {
 			//transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
 			//transformedPoint = Vec3RotateZ(transformedPoint, mesh.rotation.z);
 			// Translate the vertex away from the camera in z
-            //Vector3 transformedPoint = faceVertices[j];
+			//Vector3 transformedPoint = faceVertices[j];
 			transformedPoint.z += 5;
 			transformedVertices.push_back(transformedPoint);
 		}
@@ -112,7 +116,7 @@ void Update() {
 		// 4. Dot product between N and cam ray
 		float dot = Dot(n, camRay);
 		// 5. If dot < 0 skip the face
-        if (dot < 0)
+		if (dot < 0)
 			continue;
 
 		// Project using perspective projection
