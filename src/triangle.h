@@ -7,6 +7,7 @@ struct Face {
 	int a;
 	int b;
 	int c;
+	uint32_t color;
 };
 
 /// @brief Sores the actual vec2 points of the triangle in the screen
@@ -17,5 +18,6 @@ struct Triangle {
 		points[2] = Vector2{ 0., 0. };
 	}
 	Vector2 points[3];
+	uint32_t color;
 };
 

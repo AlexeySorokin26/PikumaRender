@@ -127,12 +127,16 @@ void Update() {
 
 		// Project using perspective projection
 		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
-		for (int j = 0; j < 3; ++j) {
-			Vector2 projectedPoint = Project(transformedVertices[j]);
+		std::vector<Vector2> projectedPoints;
+		const int pointsPerTriangle = 3;
+		projectedPoints.resize(pointsPerTriangle);
+		for (int j = 0; j < pointsPerTriangle; ++j) {
+			projectedPoints[j] = Project(transformedVertices[j]);
 			// Scale and translate the projected points to the middle of the screen
-			projectedPoint.x += display.windowWidth / 2;
-			projectedPoint.y += display.windowHeight / 2;
-			projectedTriangle.points[j] = projectedPoint;
+			projectedPoints[j].x += display.windowWidth / 2;
+			projectedPoints[j].y += display.windowHeight / 2;
+			projectedTriangle.points[j] = projectedPoints[j];
+			projectedTriangle.color = meshFace.color;
 		}
 
 		// Store result
@@ -152,7 +156,7 @@ void Render() {
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_VERTEX ||
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX
 			) {
-			uint32_t color = 0xFF0000FF;
+			uint32_t color = triangle.color;
 			display.DrawRectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, color);
 			display.DrawRectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, color);
 			display.DrawRectangle(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, color);
@@ -167,7 +171,7 @@ void Render() {
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				0x000000FF
+				triangle.color
 			);
 		}
 
@@ -180,7 +184,7 @@ void Render() {
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				0xFF555555
+				triangle.color
 			);
 		}
 	}

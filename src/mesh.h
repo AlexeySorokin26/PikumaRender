@@ -7,13 +7,14 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <random>
 
 struct Mesh {
 	std::vector<Vector3> vertices;
 	std::vector<Face> faces;
 	Vector3 rotation;  // angles in x,y,z (Euler angles)
 
-    void LoadObjFile(const std::string& path) {
+	void LoadObjFile(const std::string& path) {
 		std::ifstream file(path);
 		if (!file.is_open())
 			throw std::runtime_error("File does not exist: " + path);
@@ -39,6 +40,11 @@ struct Mesh {
 				face.b = first;
 				iss >> first >> slash >> second >> slash >> third;
 				face.c = first;
+				face.color =
+					0xFF000000 |                     // Alpha
+					((std::rand() % 256) << 16) |    // Red: 0-255
+					((std::rand() % 256) << 8) |     // Green: 0-255  
+					(std::rand() % 256);             // Blue: 0-255
 				faces.push_back(face);
 			}
 		}
