@@ -129,12 +129,12 @@ void Display::DrawFilledTriangle(int x0, int y0, int x1, int y1, int x2, int y2,
 		std::swap(y1, y2);
 		std::swap(x1, x2);
 	}
-    if (y1 == y2){
-        FillFlatBottomTriangle(x0, y0, x1, y1, x2, y2, color);
-    }
-    else if (y0 == y1){
-        FillFlatTopTriangle(x0, y0, x1, y1, x2, y2, color);
-    }
+	if (y1 == y2) {
+		FillFlatBottomTriangle(x0, y0, x1, y1, x2, y2, color);
+	}
+	else if (y0 == y1) {
+		FillFlatTopTriangle(x0, y0, x1, y1, x2, y2, color);
+	}
 	// Calculate (Mx, My) using triangle similarity
 	int My = y1;
 	int Mx = (x2 - x0) * (y1 - y0) / (float)(y2 - y0) + x0;
@@ -145,35 +145,33 @@ void Display::DrawFilledTriangle(int x0, int y0, int x1, int y1, int x2, int y2,
 }
 
 void Display::FillFlatBottomTriangle(int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color) {
-    if (y1 <= y0) return;  // Add safety check
-    
-    // Use FLOAT for slopes to avoid integer truncation
-    float slope1 = (x1 - x0) / (float)(y1 - y0);
-    float slope2 = (Mx - x0) / (float)(My - y0);
-    
-    float xStart = (float)x0;
-    float xEnd = (float)x0;
-    
-    for (int y = y0; y <= y1; y++) {
-        DrawLine((int)xStart, y, (int)xEnd, y, color);
-        xStart += slope1;
-        xEnd += slope2;
-    }
+
+	// Use FLOAT for slopes to avoid integer truncation
+	float slope1 = (x1 - x0) / (float)(y1 - y0);
+	float slope2 = (Mx - x0) / (float)(My - y0);
+
+	float xStart = (float)x0;
+	float xEnd = (float)x0;
+
+	for (int y = y0; y <= y1; y++) {
+		DrawLine((int)xStart, y, (int)xEnd, y, color);
+		xStart += slope1;
+		xEnd += slope2;
+	}
 }
 
 void Display::FillFlatTopTriangle(int x1, int y1, int Mx, int My, int x2, int y2, uint32_t color) {
-    if (y2 <= y1) return;  // Add safety check
-    
-    // Use FLOAT for slopes
-    float slope1 = (x2 - x1) / (float)(y2 - y1);
-    float slope2 = (x2 - Mx) / (float)(y2 - My);
-    
-    float xStart = (float)x2;
-    float xEnd = (float)x2;
-    
-    for (int y = y2; y >= y1; y--) {
-        DrawLine((int)xStart, y, (int)xEnd, y, color);
-        xStart -= slope1;
-        xEnd -= slope2;
-    }
+
+	// Use FLOAT for slopes
+	float slope1 = (x2 - x1) / (float)(y2 - y1);
+	float slope2 = (x2 - Mx) / (float)(y2 - My);
+
+	float xStart = (float)x2;
+	float xEnd = (float)x2;
+
+	for (int y = y2; y >= y1; y--) {
+		DrawLine((int)xStart, y, (int)xEnd, y, color);
+		xStart -= slope1;
+		xEnd -= slope2;
+	}
 }

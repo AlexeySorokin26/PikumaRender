@@ -35,13 +35,19 @@ void ProcessInput() {
 		if (event.key.keysym.sym == SDLK_ESCAPE)
 			isRunning = false;
 		if (event.key.keysym.sym == SDLK_1)
-			display.renderMethod = RenderMethod::RENDER_WIRE_VERTEX;
+			display.renderMethod = RenderMethod::RENDER_VERTEX;
 		if (event.key.keysym.sym == SDLK_2)
 			display.renderMethod = RenderMethod::RENDER_WIRE;
 		if (event.key.keysym.sym == SDLK_3)
-			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE;
+			display.renderMethod = RenderMethod::RENDER_WIRE_VERTEX;
 		if (event.key.keysym.sym == SDLK_4)
+			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE;
+		if (event.key.keysym.sym == SDLK_5)
+			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_VERTEX;
+		if (event.key.keysym.sym == SDLK_6)
 			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
+		if (event.key.keysym.sym == SDLK_7)
+			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX;
 		if (event.key.keysym.sym == SDLK_c)
 			display.cullMethod = CullMethod::CULL_BACKFACE;
 		if (event.key.keysym.sym == SDLK_d)
@@ -59,7 +65,6 @@ void Setup() {
 	objPath = "/Users/maestro/Desktop/PikumaRender/assets/cube.obj";
 #endif
 	mesh.LoadObjFile(objPath);
-	trianglesToRender.resize(mesh.faces.size()); // Allocate and call constructor
 
 	display.colorBuffer = std::make_unique<uint32_t[]>(display.windowWidth * display.windowHeight);
 
@@ -69,7 +74,6 @@ void Setup() {
 }
 
 void Update() {
-	trianglesToRender.clear();
 	// Frame rate limiting
 	int timeToWait = display.frameTargetTime - (SDL_GetTicks() - prevFrameTime);
 	if (timeToWait > 0 && timeToWait <= display.frameTargetTime) {
@@ -78,7 +82,7 @@ void Update() {
 	prevFrameTime = SDL_GetTicks();
 
 	mesh.rotation.x += 0.01;
-	//mesh.rotation.y += 0.01;
+	mesh.rotation.y += 0.01;
 	//mesh.rotation.z += 0.01;
 
 	for (int i = 0; i < mesh.faces.size(); ++i) {
@@ -93,31 +97,33 @@ void Update() {
 		for (int j = 0; j < 3; ++j) {
 			// Apply rotation for fun
 			Vector3 transformedPoint = Vec3RotateX(faceVertices[j], mesh.rotation.x);
-			//transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
+			transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
 			//transformedPoint = Vec3RotateZ(transformedPoint, mesh.rotation.z);
 			// Translate the vertex away from the camera in z
-			//Vector3 transformedPoint = faceVertices[j];
 			transformedPoint.z += 5;
 			transformedVertices.push_back(transformedPoint);
 		}
 
 		// Perform back culling
-		Vector3 a = transformedVertices[0];
-		Vector3 b = transformedVertices[1];
-		Vector3 c = transformedVertices[2];
-		// 1. Find vectors B-A and C-A
-		Vector3 ab = Subtract(b, a);
-		Vector3 ac = Subtract(c, a);
-		// 2. Take cross prod and find N
-		Vector3 n = Cross(ab, ac);
-		Normalize(n);
-		// 3. Find the camera ray by subtracting cam pos and point A
-		Vector3 camRay = Subtract(camPos, a);
-		// 4. Dot product between N and cam ray
-		float dot = Dot(n, camRay);
-		// 5. If dot < 0 skip the face
-		if (dot < 0)
-			continue;
+		if (display.cullMethod == CullMethod::CULL_BACKFACE) {
+			Vector3 a = transformedVertices[0];
+			Vector3 b = transformedVertices[1];
+			Vector3 c = transformedVertices[2];
+			// 1. Find vectors B-A and C-A
+			Vector3 ab = Subtract(b, a);
+			Vector3 ac = Subtract(c, a);
+			// 2. Take cross prod and find N
+			Vector3 n = Cross(ab, ac);
+			Normalize(n);
+			// 3. Find the camera ray by subtracting cam pos and point A
+			Vector3 camRay = Subtract(camPos, a);
+			Normalize(camRay);
+			// 4. Dot product between N and cam ray
+			float dot = Dot(n, camRay);
+			// 5. If dot < 0 skip the face
+			if (dot < 0)
+				continue;
+		}
 
 		// Project using perspective projection
 		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
@@ -139,13 +145,46 @@ void Render() {
 
 	for (int i = 0; i < trianglesToRender.size(); ++i) {
 		Triangle triangle = trianglesToRender[i];
-		display.DrawFilledTriangle(
-			triangle.points[0].x, triangle.points[0].y,
-			triangle.points[1].x, triangle.points[1].y,
-			triangle.points[2].x, triangle.points[2].y,
-			0xFF00FF00);
-	}
 
+		// triangle vertex points
+		if (display.renderMethod == RenderMethod::RENDER_VERTEX ||
+			display.renderMethod == RenderMethod::RENDER_WIRE_VERTEX ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_VERTEX ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX
+			) {
+			uint32_t color = 0xFF0000FF;
+			display.DrawRectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, color);
+			display.DrawRectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, color);
+			display.DrawRectangle(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, color);
+		}
+
+		// triangle wireframe
+		if (display.renderMethod == RenderMethod::RENDER_WIRE ||
+			display.renderMethod == RenderMethod::RENDER_WIRE_VERTEX ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
+			display.DrawTriangle(
+				triangle.points[0].x, triangle.points[0].y,
+				triangle.points[1].x, triangle.points[1].y,
+				triangle.points[2].x, triangle.points[2].y,
+				0x000000FF
+			);
+		}
+
+		// filled triangle
+		if (display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX ||
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_VERTEX) {
+			display.DrawFilledTriangle(
+				triangle.points[0].x, triangle.points[0].y,
+				triangle.points[1].x, triangle.points[1].y,
+				triangle.points[2].x, triangle.points[2].y,
+				0xFF555555
+			);
+		}
+	}
+	trianglesToRender.clear();
 	display.RenderColorBuffer();
 
 	SDL_RenderPresent(display.renderer);

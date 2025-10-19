@@ -5,16 +5,19 @@
 #include <memory>
 #include <iostream>
 
-enum class CullMethod{
-  CULL_NONE,
-  CULL_BACKFACE
+enum class CullMethod {
+	CULL_NONE,
+	CULL_BACKFACE
 };
 
-enum class RenderMethod{
-  RENDER_WIRE,
-  RENDER_WIRE_VERTEX,
-  RENDER_FILL_TRIANGLE,
-  RENDER_FILL_TRIANGLE_WIRE
+enum class RenderMethod {
+	RENDER_VERTEX,
+	RENDER_WIRE,
+	RENDER_WIRE_VERTEX,
+	RENDER_FILL_TRIANGLE,
+	RENDER_FILL_TRIANGLE_VERTEX,
+	RENDER_FILL_TRIANGLE_WIRE,
+	RENDER_FILL_TRIANGLE_WIRE_VERTEX
 };
 
 class Display {
@@ -27,9 +30,9 @@ public:
 	int windowHeight = 600;
 	const int FPS = 30; // we want to render 30 frames in 1 second (it's just a defintion)
 	const float frameTargetTime = (1000.0 / FPS); // how many time each frame should take if we want to render all in 1s
-    CullMethod cullMethod = CullMethod::CULL_NONE;
-    RenderMethod renderMethod = RenderMethod::RENDER_WIRE;
-    
+	CullMethod cullMethod = CullMethod::CULL_NONE;
+	RenderMethod renderMethod = RenderMethod::RENDER_WIRE;
+
 public:
 	bool InitWindow();
 	void DrawRectangle(int x, int y, int w, int h, uint32_t color);
