@@ -2,6 +2,8 @@
 #include "display.h"
 #include "vector.h"
 #include "mesh.h"
+#include "sorting.h"
+#include "matrix.h"
 
 #include <SDL.h>
 #include <iostream>
@@ -85,6 +87,11 @@ void Update() {
 	mesh.rotation.y += 0.01;
 	//mesh.rotation.z += 0.01;
 
+	// Create scale matrix 
+	mesh.scale.x += 0.002;
+	Mat4 scaleMat = Mat4::Scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+
+	// Process all triangles
 	for (int i = 0; i < mesh.faces.size(); ++i) {
 		Face meshFace = mesh.faces[i]; // indices of our vertices 
 		Vector3 faceVertices[3];	   // Set of vertices
@@ -93,22 +100,19 @@ void Update() {
 		faceVertices[2] = mesh.vertices[meshFace.c - 1];
 
 		// Apply transformations
-		std::vector<Vector3> transformedVertices;
+		std::vector<Vector4> transformedVertices;
 		for (int j = 0; j < 3; ++j) {
-			// Apply rotation for fun
-			Vector3 transformedPoint = Vec3RotateX(faceVertices[j], mesh.rotation.x);
-			transformedPoint = Vec3RotateY(transformedPoint, mesh.rotation.y);
-			//transformedPoint = Vec3RotateZ(transformedPoint, mesh.rotation.z);
-			// Translate the vertex away from the camera in z
+			Vector4 transformedPoint = Vec3ToVec4(faceVertices[j]);
+			transformedPoint = scaleMat * transformedPoint;
 			transformedPoint.z += 5;
 			transformedVertices.push_back(transformedPoint);
 		}
 
 		// Perform back culling
 		if (display.cullMethod == CullMethod::CULL_BACKFACE) {
-			Vector3 a = transformedVertices[0];
-			Vector3 b = transformedVertices[1];
-			Vector3 c = transformedVertices[2];
+			Vector3 a = Vec4ToVec3(transformedVertices[0]);
+			Vector3 b = Vec4ToVec3(transformedVertices[1]);
+			Vector3 c = Vec4ToVec3(transformedVertices[2]);
 			// 1. Find vectors B-A and C-A
 			Vector3 ab = Subtract(b, a);
 			Vector3 ac = Subtract(c, a);
@@ -127,11 +131,14 @@ void Update() {
 
 		// Project using perspective projection
 		Triangle projectedTriangle; // 3 Vertices with 2D coordinates
+		// Get average depth for each face based on the vertices z-value after trasnformation
+		projectedTriangle.averageDepth = (transformedVertices[0].z + transformedVertices[1].z + transformedVertices[2].z) / 3.0;
+		// Get projected x and y
 		std::vector<Vector2> projectedPoints;
 		const int pointsPerTriangle = 3;
 		projectedPoints.resize(pointsPerTriangle);
 		for (int j = 0; j < pointsPerTriangle; ++j) {
-			projectedPoints[j] = Project(transformedVertices[j]);
+			projectedPoints[j] = Project(Vec4ToVec3(transformedVertices[j]));
 			// Scale and translate the projected points to the middle of the screen
 			projectedPoints[j].x += display.windowWidth / 2;
 			projectedPoints[j].y += display.windowHeight / 2;
@@ -142,10 +149,13 @@ void Update() {
 		// Store result
 		trianglesToRender.push_back(projectedTriangle);
 	}
+
+	// Sort triangles 
+	BubleSort(trianglesToRender);
 }
 
 void Render() {
-	display.ClearColorBuffer(0xFFFFFFFF);
+	display.ClearColorBuffer(0xFF000000);
 
 	for (int i = 0; i < trianglesToRender.size(); ++i) {
 		Triangle triangle = trianglesToRender[i];

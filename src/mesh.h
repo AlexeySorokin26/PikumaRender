@@ -12,7 +12,9 @@
 struct Mesh {
 	std::vector<Vector3> vertices;
 	std::vector<Face> faces;
-	Vector3 rotation;  // angles in x,y,z (Euler angles)
+	Vector3 rotation{ 0, 0, 0 };    // angles in x,y,z (Euler angles)
+	Vector3 scale{ 1, 1, 1 };		 // scale with x,y, z values
+	Vector3 translation{ 0, 0, 0 }; // translation with x,y,z values
 
 	void LoadObjFile(const std::string& path) {
 		std::ifstream file(path);
