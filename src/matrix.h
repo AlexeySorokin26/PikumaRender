@@ -3,36 +3,44 @@
 #include "vector.h"
 
 #include <array>
+#include <cmath>
 
-class Mat4 {
+class Mat4
+{
 private:
 	std::array<float, 16> data;
 
 public:
 	Mat4() { SetIdentity(); }
 
-	void SetIdentity() {
+	void SetIdentity()
+	{
 		std::fill(data.begin(), data.end(), 0.0f);
 		data[0] = data[5] = data[10] = data[15] = 1.0f;
 	}
 
-	float& operator()(int row, int col) {
+	float &operator()(int row, int col)
+	{
 		return data[row * 4 + col];
 	}
 
-	const float& operator()(int row, int col) const {
+	const float &operator()(int row, int col) const
+	{
 		return data[row * 4 + col];
 	}
 
-	float& operator[](int pos) {
+	float &operator[](int pos)
+	{
 		return data[pos];
 	}
 
-	const float& operator[](int pos) const {
+	const float &operator[](int pos) const
+	{
 		return data[pos];
 	}
 
-	static Mat4 Scale(float sx, float sy, float sz) {
+	static Mat4 Scale(float sx, float sy, float sz)
+	{
 		Mat4 res;
 		res[0] = sx;
 		res[5] = sy;
@@ -40,7 +48,17 @@ public:
 		return res;
 	}
 
-	Vector4 operator*(const Vector4& b) const {
+	static Mat4 Translation(float tx, float ty, float tz)
+	{
+		Mat4 res;
+		res[3] = tx;
+		res[7] = ty;
+		res[11] = tz;
+		return res;
+	}
+
+	Vector4 operator*(const Vector4 &b) const
+	{
 		Vector4 res;
 		res.x = data[0] * b.x + data[1] * b.y + data[2] * b.z + data[3] * b.w;
 		res.y = data[4] * b.x + data[5] * b.y + data[6] * b.z + data[7] * b.w;
@@ -49,4 +67,75 @@ public:
 		return res;
 	}
 
+	static Mat4 RotationAroundXAxis(float angle)
+	{
+		float c = cos(angle);
+		float s = sin(angle);
+		Mat4 res;
+		res[0] = 1;
+		res[1] = 0;
+		res[2] = 0;
+		res[3] = 0;
+		res[4] = 0;
+		res[5] = c;
+		res[6] = -s;
+		res[7] = 0;
+		res[8] = 0;
+		res[9] = s;
+		res[10] = c;
+		res[11] = 0;
+		res[12] = 0;
+		res[13] = 0;
+		res[14] = 0;
+		res[15] = 1;
+		return res;
+	}
+
+	static Mat4 RotationAroundYAxis(float angle)
+	{
+		float c = cos(angle);
+		float s = sin(angle);
+		Mat4 res;
+		res[0] = c;
+		res[1] = 0;
+		res[2] = s;
+		res[3] = 0;
+		res[4] = 0;
+		res[5] = 1;
+		res[6] = 0;
+		res[7] = 0;
+		res[8] = -s;
+		res[9] = 0;
+		res[10] = c;
+		res[11] = 0;
+		res[12] = 0;
+		res[13] = 0;
+		res[14] = 0;
+		res[15] = 1;
+		return res;
+	}
+
+	static Mat4 RotationAroundZAxis(float angle)
+	{
+		float c = cos(angle);
+		float s = sin(angle);
+		Mat4 res;
+		res[0] = c;
+		res[1] = -s;
+		res[2] = 0;
+		res[3] = 0;
+		res[4] = s;
+		res[5] = c;
+		res[6] = 0;
+		res[7] = 0;
+		res[8] = 0;
+		res[9] = 0;
+		res[10] = 1;
+		res[11] = 0;
+		res[12] = 0;
+		res[13] = 0;
+		res[14] = 0;
+		res[15] = 1;
+		return res;
+	}
 };
