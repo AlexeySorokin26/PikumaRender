@@ -1,7 +1,7 @@
 git clone https://github.com/Microsoft/vcpkg.git
 ./bootstrap-vcpkg.sh
 
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake .. 
 
 
 Terms:
@@ -12,3 +12,5 @@ Linear transformations
 Перенос требует матрицы 4 на 4
 
 Гомогенные координаты — это система координат, широко используемая в компьютерной графике и геометрии, где точка в N-мерном пространстве представляется (N+1)-мерным вектором.
+
+Матрица переноса не работает если мы будет использовать матрицу 3на3
