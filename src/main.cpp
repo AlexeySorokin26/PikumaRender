@@ -115,10 +115,11 @@ void Update()
 
 		// Apply transformations
 		std::vector<Vector4> transformedVertices;
+		Mat4 worldMatrix = translationMat * rotationMatX * scaleMat;
 		for (int j = 0; j < 3; ++j)
 		{
 			Vector4 transformedPoint = Vec3ToVec4(faceVertices[j]);
-			transformedPoint =  translationMat * ( rotationMatX * (scaleMat * transformedPoint));
+			transformedPoint =  worldMatrix * transformedPoint;
 			transformedVertices.push_back(transformedPoint);
 		}
 

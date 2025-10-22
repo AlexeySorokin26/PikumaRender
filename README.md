@@ -14,3 +14,6 @@ Linear transformations
 Гомогенные координаты — это система координат, широко используемая в компьютерной графике и геометрии, где точка в N-мерном пространстве представляется (N+1)-мерным вектором.
 
 Матрица переноса не работает если мы будет использовать матрицу 3на3
+
+World matrix is a combination of translation * rotation * scale matrix so all the matrices that transform the original vectors and place the overall 3D mesh in its correct place in the world/scene
+
