@@ -11,9 +11,27 @@ Linear transformations
 Масштабирование поворот не требует 4 на 4
 Перенос требует матрицы 4 на 4
 
+1. Определение линейного преобразования
+Преобразование T является линейным если:
+
+T(u + v) = T(u) + T(v) - аддитивность
+
+T(αu) = αT(u) - однородность
+Пусть перенос на вектор t: T(v) = v + t
+Проверяем аддитивность:
+T(u + v) = (u + v) + t
+T(u) + T(v) = (u + t) + (v + t) = u + v + 2t
+❌ T(u + v) ≠ T(u) + T(v) (t ≠ 2t)
+Проверяем однородность:
+T(αu) = αu + t  
+αT(u) = α(u + t) = αu + αt
+❌ T(αu) ≠ αT(u) (t ≠ αt)
+
 Гомогенные координаты — это система координат, широко используемая в компьютерной графике и геометрии, где точка в N-мерном пространстве представляется (N+1)-мерным вектором.
 
 Матрица переноса не работает если мы будет использовать матрицу 3на3
+Translation is not a linear transformation
+because the change the origin of our object (we just move it)
 
 World matrix is a combination of translation * rotation * scale matrix so all the matrices that transform the original vectors and place the overall 3D mesh in its correct place in the world/scene
 
