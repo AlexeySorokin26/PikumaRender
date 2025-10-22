@@ -12,7 +12,7 @@
 
 Display display;
 bool isRunning = true;
-Vector3 camPos = { 0,0,0 };
+Vector3 camPos = {0, 0, 0};
 int prevFrameTime = 0;
 int fovFactor = 640;
 Mesh mesh;
@@ -20,16 +20,19 @@ std::string objPath;
 
 std::vector<Triangle> trianglesToRender;
 
-Vector2 Project(Vector3 point) {
-	Vector2 projectedPoint{ fovFactor * point.x / point.z, fovFactor * point.y / point.z };
+Vector2 Project(Vector3 point)
+{
+	Vector2 projectedPoint{fovFactor * point.x / point.z, fovFactor * point.y / point.z};
 	return projectedPoint;
 }
 
-void ProcessInput() {
+void ProcessInput()
+{
 	SDL_Event event;
 	SDL_PollEvent(&event);
 
-	switch (event.type) {
+	switch (event.type)
+	{
 	case SDL_QUIT:
 		isRunning = false;
 		break;
@@ -58,7 +61,8 @@ void ProcessInput() {
 	}
 }
 
-void Setup() {
+void Setup()
+{
 #ifdef _WIN32
 	// Windows
 	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj";
@@ -75,25 +79,35 @@ void Setup() {
 		display.windowWidth, display.windowHeight);
 }
 
-void Update() {
+void Update()
+{
 	// Frame rate limiting
 	int timeToWait = display.frameTargetTime - (SDL_GetTicks() - prevFrameTime);
-	if (timeToWait > 0 && timeToWait <= display.frameTargetTime) {
+	if (timeToWait > 0 && timeToWait <= display.frameTargetTime)
+	{
 		SDL_Delay(timeToWait);
 	}
 	prevFrameTime = SDL_GetTicks();
 
-	mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.01;
-	//mesh.rotation.z += 0.01;
-
-	// Create scale matrix 
+	// Tranlsation
+	mesh.translation.x += 0.01;
+	mesh.translation.z = 15.0;
+	Mat4 translationMat = Mat4::Translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+	// Create scale matrix
 	mesh.scale.x += 0.002;
 	Mat4 scaleMat = Mat4::Scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+	// Rotation
+	mesh.rotation.x += 0.01;
+	mesh.rotation.y += 0.01;
+	mesh.rotation.z += 0.01;
+	Mat4 rotationMatX = Mat4::RotationAroundXAxis(mesh.rotation.x);
+	Mat4 rotationMatY = Mat4::RotationAroundYAxis(mesh.rotation.y);
+	Mat4 rotationMatZ = Mat4::RotationAroundZAxis(mesh.rotation.z);
 
 	// Process all triangles
-	for (int i = 0; i < mesh.faces.size(); ++i) {
-		Face meshFace = mesh.faces[i]; // indices of our vertices 
+	for (int i = 0; i < mesh.faces.size(); ++i)
+	{
+		Face meshFace = mesh.faces[i]; // indices of our vertices
 		Vector3 faceVertices[3];	   // Set of vertices
 		faceVertices[0] = mesh.vertices[meshFace.a - 1];
 		faceVertices[1] = mesh.vertices[meshFace.b - 1];
@@ -101,15 +115,16 @@ void Update() {
 
 		// Apply transformations
 		std::vector<Vector4> transformedVertices;
-		for (int j = 0; j < 3; ++j) {
+		for (int j = 0; j < 3; ++j)
+		{
 			Vector4 transformedPoint = Vec3ToVec4(faceVertices[j]);
-			transformedPoint = scaleMat * transformedPoint;
-			transformedPoint.z += 5;
+			transformedPoint =  translationMat * ( rotationMatX * (scaleMat * transformedPoint));
 			transformedVertices.push_back(transformedPoint);
 		}
 
 		// Perform back culling
-		if (display.cullMethod == CullMethod::CULL_BACKFACE) {
+		if (display.cullMethod == CullMethod::CULL_BACKFACE)
+		{
 			Vector3 a = Vec4ToVec3(transformedVertices[0]);
 			Vector3 b = Vec4ToVec3(transformedVertices[1]);
 			Vector3 c = Vec4ToVec3(transformedVertices[2]);
@@ -137,7 +152,8 @@ void Update() {
 		std::vector<Vector2> projectedPoints;
 		const int pointsPerTriangle = 3;
 		projectedPoints.resize(pointsPerTriangle);
-		for (int j = 0; j < pointsPerTriangle; ++j) {
+		for (int j = 0; j < pointsPerTriangle; ++j)
+		{
 			projectedPoints[j] = Project(Vec4ToVec3(transformedVertices[j]));
 			// Scale and translate the projected points to the middle of the screen
 			projectedPoints[j].x += display.windowWidth / 2;
@@ -150,22 +166,24 @@ void Update() {
 		trianglesToRender.push_back(projectedTriangle);
 	}
 
-	// Sort triangles 
+	// Sort triangles to use painter algorithm
 	BubleSort(trianglesToRender);
 }
 
-void Render() {
+void Render()
+{
 	display.ClearColorBuffer(0xFF000000);
 
-	for (int i = 0; i < trianglesToRender.size(); ++i) {
+	for (int i = 0; i < trianglesToRender.size(); ++i)
+	{
 		Triangle triangle = trianglesToRender[i];
 
 		// triangle vertex points
 		if (display.renderMethod == RenderMethod::RENDER_VERTEX ||
 			display.renderMethod == RenderMethod::RENDER_WIRE_VERTEX ||
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_VERTEX ||
-			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX
-			) {
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX)
+		{
 			uint32_t color = triangle.color;
 			display.DrawRectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, color);
 			display.DrawRectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, color);
@@ -176,26 +194,26 @@ void Render() {
 		if (display.renderMethod == RenderMethod::RENDER_WIRE ||
 			display.renderMethod == RenderMethod::RENDER_WIRE_VERTEX ||
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX ||
-			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE) {
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE)
+		{
 			display.DrawTriangle(
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				triangle.color
-			);
+				triangle.color);
 		}
 
 		// filled triangle
 		if (display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE ||
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE ||
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX ||
-			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_VERTEX) {
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_VERTEX)
+		{
 			display.DrawFilledTriangle(
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				triangle.color
-			);
+				triangle.color);
 		}
 	}
 	trianglesToRender.clear();
@@ -204,7 +222,8 @@ void Render() {
 	SDL_RenderPresent(display.renderer);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 
 	isRunning = display.InitWindow();
 
@@ -212,7 +231,8 @@ int main(int argc, char* argv[]) {
 
 	SDL_Event event;
 
-	while (isRunning) {
+	while (isRunning)
+	{
 		ProcessInput();
 		Update();
 		Render();
