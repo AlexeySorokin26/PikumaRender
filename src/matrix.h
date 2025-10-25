@@ -19,22 +19,22 @@ public:
 		data[0] = data[5] = data[10] = data[15] = 1.0f;
 	}
 
-	float &operator()(int row, int col)
+	float& operator()(int row, int col)
 	{
 		return data[row * 4 + col];
 	}
 
-	const float &operator()(int row, int col) const
+	const float& operator()(int row, int col) const
 	{
 		return data[row * 4 + col];
 	}
 
-	float &operator[](int pos)
+	float& operator[](int pos)
 	{
 		return data[pos];
 	}
 
-	const float &operator[](int pos) const
+	const float& operator[](int pos) const
 	{
 		return data[pos];
 	}
@@ -57,7 +57,7 @@ public:
 		return res;
 	}
 
-	Vector4 operator*(const Vector4 &b) const
+	Vector4 operator*(const Vector4& b) const
 	{
 		Vector4 res;
 		res.x = data[0] * b.x + data[1] * b.y + data[2] * b.z + data[3] * b.w;
@@ -66,8 +66,8 @@ public:
 		res.w = data[12] * b.x + data[13] * b.y + data[14] * b.z + data[15] * b.w;
 		return res;
 	}
-	
-	Mat4 operator*(const Mat4 &b) const
+
+	Mat4 operator*(const Mat4& b) const
 	{
 		Mat4 res;
 		for (int i = 0; i < 4; i++)
@@ -155,4 +155,28 @@ public:
 		res[15] = 1;
 		return res;
 	}
+
+	static Mat4 Perspective(float fov, float aspect, float znear, float zfar) {
+		Mat4 m;
+		float tanHalfFov = tan(fov / 2);
+
+		m[0] = 1.0f / (aspect * tanHalfFov);  // n/r
+		m[5] = 1.0f / tanHalfFov;             // n/t  
+		m[10] = zfar / (zfar - znear);
+		m[11] = (-zfar * znear) / (zfar - znear);
+		m[14] = 1.0f;
+
+		return m;
+	}
+
+	static Vector4 MulVec4Projetion(const Mat4& proj, const Vector4& v) {
+		Vector4 res = proj * v;
+		if (res.w != 0.0) {
+			res.x /= res.w;
+			res.y /= res.w;
+			res.z /= res.w;
+		}
+		return res;
+	}
 };
+

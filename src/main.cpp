@@ -12,17 +12,18 @@
 
 Display display;
 bool isRunning = true;
-Vector3 camPos = {0, 0, 0};
+Vector3 camPos = { 0, 0, 0 };
 int prevFrameTime = 0;
 int fovFactor = 640;
 Mesh mesh;
 std::string objPath;
+Mat4 perspectiveMat;
 
 std::vector<Triangle> trianglesToRender;
 
 Vector2 Project(Vector3 point)
 {
-	Vector2 projectedPoint{fovFactor * point.x / point.z, fovFactor * point.y / point.z};
+	Vector2 projectedPoint{ fovFactor * point.x / point.z, fovFactor * point.y / point.z };
 	return projectedPoint;
 }
 
@@ -77,6 +78,11 @@ void Setup()
 	display.colorBufferTexture = SDL_CreateTexture(
 		display.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
 		display.windowWidth, display.windowHeight);
+	float fov = 3.141592 / 3.0; // 60 deg
+	float aspect = (float)display.windowHeight / (float)display.windowWidth;
+	float zNear = 0.1;
+	float zFar = 100.0;
+	perspectiveMat = Mat4::Perspective(fov, aspect, zNear, zFar);
 }
 
 void Update()
@@ -90,16 +96,16 @@ void Update()
 	prevFrameTime = SDL_GetTicks();
 
 	// Tranlsation
-	mesh.translation.x += 0.01;
-	mesh.translation.z = 15.0;
+	//mesh.translation.x += 0.01;
+	mesh.translation.z = 5.0;
 	Mat4 translationMat = Mat4::Translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 	// Create scale matrix
-	mesh.scale.x += 0.002;
+	//mesh.scale.x += 0.2;
 	Mat4 scaleMat = Mat4::Scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 	// Rotation
 	mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.01;
-	mesh.rotation.z += 0.01;
+	//mesh.rotation.y += 0.01;
+	//mesh.rotation.z += 0.01;
 	Mat4 rotationMatX = Mat4::RotationAroundXAxis(mesh.rotation.x);
 	Mat4 rotationMatY = Mat4::RotationAroundYAxis(mesh.rotation.y);
 	Mat4 rotationMatZ = Mat4::RotationAroundZAxis(mesh.rotation.z);
@@ -119,7 +125,7 @@ void Update()
 		for (int j = 0; j < 3; ++j)
 		{
 			Vector4 transformedPoint = Vec3ToVec4(faceVertices[j]);
-			transformedPoint =  worldMatrix * transformedPoint;
+			transformedPoint = worldMatrix * transformedPoint;
 			transformedVertices.push_back(transformedPoint);
 		}
 
@@ -155,10 +161,15 @@ void Update()
 		projectedPoints.resize(pointsPerTriangle);
 		for (int j = 0; j < pointsPerTriangle; ++j)
 		{
-			projectedPoints[j] = Project(Vec4ToVec3(transformedVertices[j]));
-			// Scale and translate the projected points to the middle of the screen
-			projectedPoints[j].x += display.windowWidth / 2;
-			projectedPoints[j].y += display.windowHeight / 2;
+			projectedPoints[j] = Vec4ToVec3(Mat4::MulVec4Projetion(perspectiveMat, transformedVertices[j]));
+			// Scale 
+			projectedPoints[j].x *= display.windowWidth / 2.0;
+			projectedPoints[j].y *= display.windowHeight / 2.0;
+			// Translate the projected points to the middle of the screen
+			projectedPoints[j].x += display.windowWidth / 2.0;
+			projectedPoints[j].y += display.windowHeight / 2.0;
+
+			// Store
 			projectedTriangle.points[j] = projectedPoints[j];
 			projectedTriangle.color = meshFace.color;
 		}
@@ -223,7 +234,7 @@ void Render()
 	SDL_RenderPresent(display.renderer);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 
 	isRunning = display.InitWindow();

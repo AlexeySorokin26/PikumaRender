@@ -35,3 +35,15 @@ because the change the origin of our object (we just move it)
 
 World matrix is a combination of translation * rotation * scale matrix so all the matrices that transform the original vectors and place the overall 3D mesh in its correct place in the world/scene
 
+Projection Matrix responsible for
+1. Aspect ratio: adjust x and y values based on the screen width & height values
+ a = h/w
+2. Field of view: -//-
+ tanQ/2 = opposite / adjacent
+ f = 1/tanQ/2
+3. Normalization: adjust x,y,z to be in -1 to +1 NDC
+ zFar zNear
+ l = zFar / (zFar - zNear) - zFar/(zFar - zNear) *zNear
+
+ Выводится за два этапа
+ делаем проекцию считаем x y z проекционные затем переходит в ndc через подобные отрезки	
