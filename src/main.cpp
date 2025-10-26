@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "sorting.h"
 #include "matrix.h"
+#include "light.h"
 
 #include <SDL.h>
 #include <iostream>
@@ -18,14 +19,9 @@ int fovFactor = 640;
 Mesh mesh;
 std::string objPath;
 Mat4 perspectiveMat;
-
 std::vector<Triangle> trianglesToRender;
+Light light;
 
-Vector2 Project(Vector3 point)
-{
-	Vector2 projectedPoint{ fovFactor * point.x / point.z, fovFactor * point.y / point.z };
-	return projectedPoint;
-}
 
 void ProcessInput()
 {
@@ -83,6 +79,7 @@ void Setup()
 	float zNear = 0.1;
 	float zFar = 100.0;
 	perspectiveMat = Mat4::Perspective(fov, aspect, zNear, zFar);
+	light.direction = Vector3(0, 0, 1);
 }
 
 void Update()
@@ -103,9 +100,9 @@ void Update()
 	//mesh.scale.x += 0.2;
 	Mat4 scaleMat = Mat4::Scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 	// Rotation
-	mesh.rotation.x += 0.01;
-	//mesh.rotation.y += 0.01;
-	//mesh.rotation.z += 0.01;
+	mesh.rotation.x += 0.001;
+	mesh.rotation.y += 0.01;
+	mesh.rotation.z += 0.01;
 	Mat4 rotationMatX = Mat4::RotationAroundXAxis(mesh.rotation.x);
 	Mat4 rotationMatY = Mat4::RotationAroundYAxis(mesh.rotation.y);
 	Mat4 rotationMatZ = Mat4::RotationAroundZAxis(mesh.rotation.z);
@@ -121,7 +118,7 @@ void Update()
 
 		// Apply transformations
 		std::vector<Vector4> transformedVertices;
-		Mat4 worldMatrix = translationMat * rotationMatX * scaleMat;
+		Mat4 worldMatrix = scaleMat * rotationMatX * translationMat;
 		for (int j = 0; j < 3; ++j)
 		{
 			Vector4 transformedPoint = Vec3ToVec4(faceVertices[j]);
@@ -129,18 +126,19 @@ void Update()
 			transformedVertices.push_back(transformedPoint);
 		}
 
+		// we need N for flat shading 
+		Vector3 a = Vec4ToVec3(transformedVertices[0]);
+		Vector3 b = Vec4ToVec3(transformedVertices[1]);
+		Vector3 c = Vec4ToVec3(transformedVertices[2]);
+		// 1. Find vectors B-A and C-A
+		Vector3 ab = Subtract(b, a);
+		Vector3 ac = Subtract(c, a);
+		// 2. Take cross prod and find N
+		Vector3 n = Cross(ab, ac);
+		Normalize(n);
 		// Perform back culling
 		if (display.cullMethod == CullMethod::CULL_BACKFACE)
 		{
-			Vector3 a = Vec4ToVec3(transformedVertices[0]);
-			Vector3 b = Vec4ToVec3(transformedVertices[1]);
-			Vector3 c = Vec4ToVec3(transformedVertices[2]);
-			// 1. Find vectors B-A and C-A
-			Vector3 ab = Subtract(b, a);
-			Vector3 ac = Subtract(c, a);
-			// 2. Take cross prod and find N
-			Vector3 n = Cross(ab, ac);
-			Normalize(n);
 			// 3. Find the camera ray by subtracting cam pos and point A
 			Vector3 camRay = Subtract(camPos, a);
 			Normalize(camRay);
@@ -159,6 +157,11 @@ void Update()
 		std::vector<Vector2> projectedPoints;
 		const int pointsPerTriangle = 3;
 		projectedPoints.resize(pointsPerTriangle);
+		//uint32_t triangleColor = meshFace.color;
+		uint32_t triangleColor = 0xFFFFFFFF;
+		float lightIntensityFactor = Dot(n, light.direction);
+		triangleColor = Light::LightApplyIntensity(triangleColor, lightIntensityFactor);
+
 		for (int j = 0; j < pointsPerTriangle; ++j)
 		{
 			projectedPoints[j] = Vec4ToVec3(Mat4::MulVec4Projetion(perspectiveMat, transformedVertices[j]));
@@ -169,9 +172,9 @@ void Update()
 			projectedPoints[j].x += display.windowWidth / 2.0;
 			projectedPoints[j].y += display.windowHeight / 2.0;
 
-			// Store
+			// Store 
 			projectedTriangle.points[j] = projectedPoints[j];
-			projectedTriangle.color = meshFace.color;
+			projectedTriangle.color = triangleColor;
 		}
 
 		// Store result

@@ -96,9 +96,9 @@ float Dot(Vector3 v1, Vector3 v2) {
 }
 
 void Normalize(Vector3& v1) {
-	Div(v1, Len(v1));
+	v1 = Div(v1, Len(v1));
 }
 
 void Normalize(Vector2& v1) {
-	Div(v1, Len(v1));
+	v1 = Div(v1, Len(v1));
 }
