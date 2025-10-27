@@ -62,7 +62,7 @@ void Setup()
 {
 #ifdef _WIN32
 	// Windows
-	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\cube.obj";
+	objPath = "C:\\Users\\PC\\Desktop\\Pikuma\\assets\\f22.obj";
 #elif __APPLE__
 	// macOS
 	objPath = "/Users/maestro/Desktop/PikumaRender/assets/cube.obj";
@@ -94,15 +94,15 @@ void Update()
 
 	// Tranlsation
 	//mesh.translation.x += 0.01;
-	mesh.translation.z = 5.0;
+	mesh.translation.z = 6.0;
 	Mat4 translationMat = Mat4::Translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 	// Create scale matrix
 	//mesh.scale.x += 0.2;
 	Mat4 scaleMat = Mat4::Scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 	// Rotation
 	mesh.rotation.x += 0.001;
-	mesh.rotation.y += 0.01;
-	mesh.rotation.z += 0.01;
+	mesh.rotation.y += 0.001;
+	mesh.rotation.z += 0.001;
 	Mat4 rotationMatX = Mat4::RotationAroundXAxis(mesh.rotation.x);
 	Mat4 rotationMatY = Mat4::RotationAroundYAxis(mesh.rotation.y);
 	Mat4 rotationMatZ = Mat4::RotationAroundZAxis(mesh.rotation.z);
@@ -118,7 +118,8 @@ void Update()
 
 		// Apply transformations
 		std::vector<Vector4> transformedVertices;
-		Mat4 worldMatrix = scaleMat * rotationMatX * translationMat;
+		Mat4 rotationMat = rotationMatX * rotationMatY * rotationMatZ;
+		Mat4 worldMatrix = translationMat * rotationMat * scaleMat;
 		for (int j = 0; j < 3; ++j)
 		{
 			Vector4 transformedPoint = Vec3ToVec4(faceVertices[j]);
@@ -159,7 +160,7 @@ void Update()
 		projectedPoints.resize(pointsPerTriangle);
 		//uint32_t triangleColor = meshFace.color;
 		uint32_t triangleColor = 0xFFFFFFFF;
-		float lightIntensityFactor = Dot(n, light.direction);
+		float lightIntensityFactor = -Dot(n, light.direction);
 		triangleColor = Light::LightApplyIntensity(triangleColor, lightIntensityFactor);
 
 		for (int j = 0; j < pointsPerTriangle; ++j)
@@ -171,7 +172,8 @@ void Update()
 			// Translate the projected points to the middle of the screen
 			projectedPoints[j].x += display.windowWidth / 2.0;
 			projectedPoints[j].y += display.windowHeight / 2.0;
-
+			// take care what our screen coordinates opposite to model
+			projectedPoints[j].y = display.windowHeight - projectedPoints[j].y;
 			// Store 
 			projectedTriangle.points[j] = projectedPoints[j];
 			projectedTriangle.color = triangleColor;
