@@ -21,6 +21,12 @@ std::string objPath;
 Mat4 perspectiveMat;
 std::vector<Triangle> trianglesToRender;
 Light light;
+uint32_t sourceAmbientColor = 0xFF00FF00;
+uint32_t sourceDiffuseColor = 0xFF00FF00;
+float sourceAmbientIntensity = 0.2;
+float sourceDiffuseIntensity = 0.4;
+float specularIntensity = 0.8f;
+float shininess = 32.0f; // Коэффициент блеска
 
 
 void ProcessInput()
@@ -80,6 +86,7 @@ void Setup()
 	float zFar = 100.0;
 	perspectiveMat = Mat4::Perspective(fov, aspect, zNear, zFar);
 	light.direction = Vector3(0, 0, 1);
+	light.position = Vector3(0, 0, 0);
 }
 
 void Update()
@@ -158,11 +165,20 @@ void Update()
 		std::vector<Vector2> projectedPoints;
 		const int pointsPerTriangle = 3;
 		projectedPoints.resize(pointsPerTriangle);
+		// Get light 
 		//uint32_t triangleColor = meshFace.color;
-		uint32_t triangleColor = 0xFFFFFFFF;
-		float lightIntensityFactor = -Dot(n, light.direction);
-		triangleColor = Light::LightApplyIntensity(triangleColor, lightIntensityFactor);
-
+		uint32_t triangleColor = 0xFF00FF00;
+		triangleColor = Light::AmbientPart(triangleColor, sourceAmbientColor, sourceAmbientIntensity);
+		Vector3 triangleCenter = {
+			(a.x + b.x + c.x) / 3.0f,
+			(a.y + b.y + c.y) / 3.0f,
+			(a.z + b.z + c.z) / 3.0f
+		};
+		Vector3 sourceDirection = Subtract(light.position, triangleCenter);
+		triangleColor += Light::DiffusePart(n, sourceDirection, triangleColor, sourceDiffuseColor, sourceDiffuseIntensity);
+		Vector3 viewDirection = Subtract(camPos, triangleCenter);
+		Normalize(viewDirection);
+		triangleColor += Light::SpecularPart(n, sourceDirection, viewDirection, triangleColor, sourceDiffuseColor, specularIntensity, shininess);
 		for (int j = 0; j < pointsPerTriangle; ++j)
 		{
 			projectedPoints[j] = Vec4ToVec3(Mat4::MulVec4Projetion(perspectiveMat, transformedVertices[j]));
