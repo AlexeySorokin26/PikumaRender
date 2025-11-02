@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector.h"
+#include "texture.h"
 
 #include "array"
 
@@ -9,6 +10,9 @@ struct Face {
 	int a;
 	int b;
 	int c;
+	Texture aUV;
+	Texture bUV;
+	Texture cUV;
 	uint32_t color;
 };
 
@@ -20,6 +24,8 @@ struct Triangle {
 		points[2] = Vector2{ 0., 0. };
 	}
 	std::array<Vector2, 3> points;
+	std::array<Texture, 3> texCoords;
+
 	uint32_t color;
 	float averageDepth; // average of 3 z vertices
 	bool operator<(Triangle& right) const {

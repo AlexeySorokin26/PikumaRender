@@ -17,7 +17,9 @@ enum class RenderMethod {
 	RENDER_FILL_TRIANGLE,
 	RENDER_FILL_TRIANGLE_VERTEX,
 	RENDER_FILL_TRIANGLE_WIRE,
-	RENDER_FILL_TRIANGLE_WIRE_VERTEX
+	RENDER_FILL_TRIANGLE_WIRE_VERTEX,
+	RENDER_TEXTURED,
+	RENDER_TEXTURED_WIRED,
 };
 
 class Display {
@@ -44,6 +46,12 @@ public:
 	void DrawLine(int x0, int y0, int x1, int y1, uint32_t color);
 	void DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 	void DrawFilledTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+	void DrawTexturedTriangle(
+		int x0, int y0, float u0, float v0,
+		int x1, int y1, float u1, float v1,
+		int x2, int y2, float u2, float v2,
+		uint32_t* texture
+	);
 	void FillFlatTopTriangle(int x0, int y0, int Mx, int My, int x2, int y2, uint32_t color);
 	void FillFlatBottomTriangle(int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color);
 };

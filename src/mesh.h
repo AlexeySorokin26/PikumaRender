@@ -51,5 +51,45 @@ struct Mesh {
 			}
 		}
 	}
+
+	void LoadCube() {
+		// Define cube vertices
+		std::vector<Vector3> cube_vertices = {
+			{ -1, -1, -1 }, // 1
+			{ -1,  1, -1 }, // 2  
+			{  1,  1, -1 }, // 3
+			{  1, -1, -1 }, // 4
+			{  1,  1,  1 }, // 5
+			{  1, -1,  1 }, // 6
+			{ -1,  1,  1 }, // 7
+			{ -1, -1,  1 }  // 8
+		};
+
+		// Define cube faces
+		std::vector<Face> cube_faces = {
+			// front
+			{ 1, 2, 3, {0, 0}, {0, 1}, {1, 1}, 0xFFFFFFFF },
+			{ 1, 3, 4, {0, 0}, {1, 1}, {1, 0}, 0xFFFFFFFF },
+			// right
+			{ 4, 3, 5, {0, 0}, {0, 1}, {1, 1}, 0xFFFFFFFF },
+			{ 4, 5, 6, {0, 0}, {1, 1}, {1, 0}, 0xFFFFFFFF },
+			// back
+			{ 6, 5, 7, {0, 0}, {0, 1}, {1, 1}, 0xFFFFFFFF },
+			{ 6, 7, 8, {0, 0}, {1, 1}, {1, 0}, 0xFFFFFFFF },
+			// left
+			{ 8, 7, 2, {0, 0}, {0, 1}, {1, 1}, 0xFFFFFFFF },
+			{ 8, 2, 1, {0, 0}, {1, 1}, {1, 0}, 0xFFFFFFFF },
+			// top
+			{ 2, 7, 5, {0, 0}, {0, 1}, {1, 1}, 0xFFFFFFFF },
+			{ 2, 5, 3, {0, 0}, {1, 1}, {1, 0}, 0xFFFFFFFF },
+			// bottom
+			{ 6, 8, 1, {0, 0}, {0, 1}, {1, 1}, 0xFFFFFFFF },
+			{ 6, 1, 4, {0, 0}, {1, 1}, {1, 0}, 0xFFFFFFFF }
+		};
+
+		// Load into mesh
+		vertices = cube_vertices;
+		faces = cube_faces;
+	}
 };
 

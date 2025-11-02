@@ -56,6 +56,10 @@ void ProcessInput()
 			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE;
 		if (event.key.keysym.sym == SDLK_7)
 			display.renderMethod = RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX;
+		if (event.key.keysym.sym == SDLK_8)
+			display.renderMethod = RenderMethod::RENDER_TEXTURED;
+		if (event.key.keysym.sym == SDLK_9)
+			display.renderMethod = RenderMethod::RENDER_TEXTURED_WIRED;
 		if (event.key.keysym.sym == SDLK_c)
 			display.cullMethod = CullMethod::CULL_BACKFACE;
 		if (event.key.keysym.sym == SDLK_d)
@@ -73,7 +77,9 @@ void Setup()
 	// macOS
 	objPath = "/Users/maestro/Desktop/PikumaRender/assets/cube.obj";
 #endif
-	mesh.LoadObjFile(objPath);
+	//mesh.LoadObjFile(objPath);
+	mesh.LoadCube();
+	meshTexture = (uint32_t*)redBrickTexture;
 
 	display.colorBuffer = std::make_unique<uint32_t[]>(display.windowWidth * display.windowHeight);
 
@@ -194,6 +200,12 @@ void Update()
 			projectedTriangle.points[j] = projectedPoints[j];
 			projectedTriangle.color = triangleColor;
 		}
+		// Texture coordinates
+		std::array<Texture, 3> tmpUVArray;
+		tmpUVArray[0] = mesh.faces[i].aUV;
+		tmpUVArray[1] = mesh.faces[i].bUV;
+		tmpUVArray[2] = mesh.faces[i].cUV;
+		projectedTriangle.texCoords = tmpUVArray;
 
 		// Store result
 		trianglesToRender.push_back(projectedTriangle);
@@ -227,7 +239,8 @@ void Render()
 		if (display.renderMethod == RenderMethod::RENDER_WIRE ||
 			display.renderMethod == RenderMethod::RENDER_WIRE_VERTEX ||
 			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE_VERTEX ||
-			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE)
+			display.renderMethod == RenderMethod::RENDER_FILL_TRIANGLE_WIRE ||
+			display.renderMethod == RenderMethod::RENDER_TEXTURED_WIRED)
 		{
 			display.DrawTriangle(
 				triangle.points[0].x, triangle.points[0].y,
@@ -247,6 +260,18 @@ void Render()
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
 				triangle.color);
+		}
+
+		// Textured triangle
+		if (display.renderMethod == RenderMethod::RENDER_TEXTURED ||
+			display.renderMethod == RenderMethod::RENDER_TEXTURED_WIRED)
+		{
+			display.DrawTexturedTriangle(
+				triangle.points[0].x, triangle.points[0].y, triangle.texCoords[0].u, triangle.texCoords[0].v,
+				triangle.points[1].x, triangle.points[1].y, triangle.texCoords[1].u, triangle.texCoords[2].v,
+				triangle.points[2].x, triangle.points[2].y, triangle.texCoords[1].u, triangle.texCoords[2].v,
+				meshTexture
+			);
 		}
 	}
 	trianglesToRender.clear();
