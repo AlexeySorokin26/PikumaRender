@@ -26,8 +26,8 @@ bool Display::InitWindow()
 		std::cout << "Creating SDL window..." << std::endl;
 
 		window = SDL_CreateWindow("SDL Example",
-								  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-								  windowWidth, windowHeight, SDL_WINDOW_BORDERLESS);
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			windowWidth, windowHeight, SDL_WINDOW_BORDERLESS);
 
 		if (!window)
 		{
@@ -40,7 +40,7 @@ bool Display::InitWindow()
 	// Creating sld renderer
 	{
 		renderer = SDL_CreateRenderer(window, -1,
-									  SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	}
 
 	// SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
@@ -231,7 +231,7 @@ void Display::DrawTexturedTriangle(
 	int x0, int y0, float u0, float v0,
 	int x1, int y1, float u1, float v1,
 	int x2, int y2, float u2, float v2,
-	uint32_t *texture)
+	uint32_t* texture)
 {
 	// Sort vertices by y-coordinate (y0 <= y1 <= y2)
 	if (y0 > y1)
@@ -283,6 +283,25 @@ void Display::DrawTexturedTriangle(
 				// Draw our pixel with the color that comes from the texture
 				DrawPixel(x, y, 0xFFFF00FF);
 			}
+		}
+	}
+
+	// Draw the flat-top triangle
+
+	if (y2 - y1 != 0)
+	{
+		float invSlopeLeft = float(x2 - x0) / (y2 - y0);
+		float invSlopeRight = float(x2 - x1) / (y2 - y1);
+
+		for (int y = y1; y <= y2; ++y)
+		{
+			int xStart = x0 + (y - y0) * invSlopeLeft;
+			int xEnd = x1 + (y - y1) * invSlopeRight;
+
+			if (xEnd < xStart) std::swap(xEnd, xStart);
+
+			for (int x = xStart; x <= xEnd; ++x)
+				DrawPixel(x, y, 0xFFFF00FF);
 		}
 	}
 }
