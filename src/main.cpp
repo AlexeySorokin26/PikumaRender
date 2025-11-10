@@ -26,7 +26,7 @@ uint32_t sourceDiffuseColor = 0xFF00FF00;
 float sourceAmbientIntensity = 0.2;
 float sourceDiffuseIntensity = 0.4;
 float specularIntensity = 0.8f;
-float shininess = 32.0f; // Коэффициент блеска
+float shininess = 32.0f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
 
 void ProcessInput()
@@ -131,7 +131,7 @@ void Update()
 
 		// Apply transformations
 		std::vector<Vector4> transformedVertices;
-		Mat4 rotationMat = rotationMatX * rotationMatY * rotationMatZ;
+		Mat4 rotationMat = rotationMatY;
 		Mat4 worldMatrix = translationMat * rotationMat * scaleMat;
 		for (int j = 0; j < 3; ++j)
 		{
