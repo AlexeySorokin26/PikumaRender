@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 
+#include "vector.h"
+
 #include <memory>
 #include <iostream>
 
@@ -54,6 +56,9 @@ public:
 	);
 	void FillFlatTopTriangle(int x0, int y0, int Mx, int My, int x2, int y2, uint32_t color);
 	void FillFlatBottomTriangle(int x0, int y0, int x1, int y1, int Mx, int My, uint32_t color);
+	Vector3 BarycentricWeights(Vector2 a, Vector2 b, Vector2 c, Vector2 p);
+	void DrawTexel(int x, int y, uint32_t* texture, Vector2 pointA, Vector2 pointB, Vector2 pointC,
+		float u0, float vo, float u1, float v1, float u2, float v2);
 };
 
 

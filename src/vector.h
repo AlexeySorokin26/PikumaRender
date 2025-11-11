@@ -1,20 +1,63 @@
-#pragma once
+﻿#pragma once
 
 struct Vector2 {
 	float x;
 	float y;
+
 	Vector2(float x = 0., float y = 0.) : x(x), y(y) {}
+
+	// Унарный минус
+	Vector2 operator-() const {
+		return Vector2(-x, -y);
+	}
+
+	// Сложение
+	Vector2 operator+(const Vector2& other) const {
+		return Vector2(x + other.x, y + other.y);
+	}
+
+	// Вычитание
+	Vector2 operator-(const Vector2& other) const {
+		return Vector2(x - other.x, y - other.y);
+	}
 };
 
 struct Vector3 : public Vector2 {
 	float z;
+
 	Vector3(float x = 0., float y = 0., float z = 0.) : Vector2(x, y), z(z) {}
+
+	Vector3 operator-() const {
+		return Vector3(-x, -y, -z);
+	}
+
+	Vector3 operator+(const Vector3& other) const {
+		return Vector3(x + other.x, y + other.y, z + other.z);
+	}
+
+	Vector3 operator-(const Vector3& other) const {
+		return Vector3(x - other.x, y - other.y, z - other.z);
+	}
 };
 
 struct Vector4 : public Vector3 {
 	float w;
+
 	Vector4(float x = 0., float y = 0., float z = 0., float w = 0.) : Vector3(x, y, z), w(w) {}
+
+	Vector4 operator-() const {
+		return Vector4(-x, -y, -z, -w);
+	}
+
+	Vector4 operator+(const Vector4& other) const {
+		return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
+	}
+
+	Vector4 operator-(const Vector4& other) const {
+		return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
+	}
 };
+
 
 Vector3 Vec3RotateX(Vector3 v, float angle);
 

@@ -1,4 +1,5 @@
 #include "display.h"
+#include "texture.h"
 
 bool Display::InitWindow()
 {
@@ -260,6 +261,11 @@ void Display::DrawTexturedTriangle(
 	if (y0 == y2)
 		return;
 
+	// Create vector points 
+	Vector2 pointA = { float(x0), float(y0) };
+	Vector2 pointB = { float(x1), float(y1) };
+	Vector2 pointC = { float(x2), float(y2) };
+
 	// Draw the flat-bottom triangle
 	float invSlopeLeft = 0;
 	float invSlopeRight = 0;
@@ -281,7 +287,7 @@ void Display::DrawTexturedTriangle(
 			for (int x = xStart; x < xEnd; ++x)
 			{
 				// Draw our pixel with the color that comes from the texture
-				DrawPixel(x, y, 0xFFFF00FF);
+				DrawTexel(x, y, texture, pointA, pointB, pointC, u0, v0, u1, v1, u2, v2);
 			}
 		}
 	}
@@ -301,7 +307,45 @@ void Display::DrawTexturedTriangle(
 			if (xEnd < xStart) std::swap(xEnd, xStart);
 
 			for (int x = xStart; x <= xEnd; ++x)
-				DrawPixel(x, y, 0xFFFF00FF);
+				DrawTexel(x, y, texture, pointA, pointB, pointC, u0, v0, u1, v1, u2, v2);
 		}
 	}
+}
+
+Vector3 Display::BarycentricWeights(Vector2 a, Vector2 b, Vector2 c, Vector2 p) {
+	// We have 2D vectors actually that's why it's called cross product 
+	// [a.x] [b.x]
+	// [a.y] [b.y]
+	// cross multiplication
+	Vector2 ac = c - a;
+	Vector2 ab = b - a;
+	Vector2 pc = c - p;
+	Vector2 pb = b - p;
+	Vector2 ap = p - a;
+
+	// areas
+	float aresABC = ac.x * ab.y - ac.y * ab.x;
+	float alpha = (pc.x * pb.y - pc.y * pb.x) / aresABC;
+	float beta = (ac.x * ap.y - ac.y * ap.x) / aresABC;
+	float gamma = 1 - alpha - beta;
+
+	return Vector3(alpha, beta, gamma);
+}
+
+void Display::DrawTexel(int x, int y, uint32_t* texture, Vector2 pointA, Vector2 pointB, Vector2 pointC,
+	float u0, float v0, float u1, float v1, float u2, float v2) {
+	Vector2 pointP = { float(x),float(y) };
+	Vector3 weights = BarycentricWeights(pointA, pointB, pointC, pointP);
+
+	float alpha = weights.x;
+	float beta = weights.y;
+	float gamma = weights.z;
+
+	float interpolatedU = u0 * alpha + u1 * beta + u2 * gamma;
+	float interpolatedV = v0 * alpha + v1 * beta + v2 * gamma;
+
+	int texX = int(interpolatedU * textureWidth);
+	int texY = int(interpolatedU * textureHeight);
+
+	DrawPixel(x, y, texture[texX + texY * textureWidth]);
 }
