@@ -282,13 +282,9 @@ void Display::DrawTexturedTriangle(
 			int xStart = x0 + (y - y0) * invSlopeLeft; // delta y * tan
 			int xEnd = x0 + (y - y0) * invSlopeRight;  // delta y * tan
 
-			if (xEnd < xStart)
-				std::swap(xEnd, xStart);
+			if (xEnd < xStart) std::swap(xEnd, xStart);
 			for (int x = xStart; x < xEnd; ++x)
-			{
-				// Draw our pixel with the color that comes from the texture
 				DrawTexel(x, y, texture, pointA, pointB, pointC, u0, v0, u1, v1, u2, v2);
-			}
 		}
 	}
 
@@ -305,7 +301,6 @@ void Display::DrawTexturedTriangle(
 			int xEnd = x1 + (y - y1) * invSlopeRight;
 
 			if (xEnd < xStart) std::swap(xEnd, xStart);
-
 			for (int x = xStart; x <= xEnd; ++x)
 				DrawTexel(x, y, texture, pointA, pointB, pointC, u0, v0, u1, v1, u2, v2);
 		}
@@ -324,9 +319,9 @@ Vector3 Display::BarycentricWeights(Vector2 a, Vector2 b, Vector2 c, Vector2 p) 
 	Vector2 ap = p - a;
 
 	// areas
-	float aresABC = ac.x * ab.y - ac.y * ab.x;
-	float alpha = (pc.x * pb.y - pc.y * pb.x) / aresABC;
-	float beta = (ac.x * ap.y - ac.y * ap.x) / aresABC;
+	float areaABC = ac.x * ab.y - ac.y * ab.x;
+	float alpha = (pc.x * pb.y - pc.y * pb.x) / areaABC;
+	float beta = (ac.x * ap.y - ac.y * ap.x) / areaABC;
 	float gamma = 1 - alpha - beta;
 
 	return Vector3(alpha, beta, gamma);
@@ -344,8 +339,8 @@ void Display::DrawTexel(int x, int y, uint32_t* texture, Vector2 pointA, Vector2
 	float interpolatedU = u0 * alpha + u1 * beta + u2 * gamma;
 	float interpolatedV = v0 * alpha + v1 * beta + v2 * gamma;
 
-	int texX = int(interpolatedU * textureWidth);
-	int texY = int(interpolatedU * textureHeight);
+	int texX = abs(int(interpolatedU * textureWidth)) % textureWidth;
+	int texY = abs(int(interpolatedV * textureHeight)) % textureHeight;
 
 	DrawPixel(x, y, texture[texX + texY * textureWidth]);
 }

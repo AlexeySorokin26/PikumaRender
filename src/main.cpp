@@ -269,7 +269,7 @@ void Render()
 			display.DrawTexturedTriangle(
 				triangle.points[0].x, triangle.points[0].y, triangle.texCoords[0].u, triangle.texCoords[0].v,
 				triangle.points[1].x, triangle.points[1].y, triangle.texCoords[1].u, triangle.texCoords[2].v,
-				triangle.points[2].x, triangle.points[2].y, triangle.texCoords[1].u, triangle.texCoords[2].v,
+				triangle.points[2].x, triangle.points[2].y, triangle.texCoords[2].u, triangle.texCoords[2].v,
 				meshTexture
 			);
 		}
